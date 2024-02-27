@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "LeetHub",
+  "short_name": "React App",
+  "description": "Automatically integrate your Leetcode & GeeksforGeeks submissions to GitHub",
+  "version": "1.1.2",
+  "author": "Minjung Sung",
+  "homepage_url": "https://github.com/minjungsung/LeetHub",
+  "icons": {},
+  "background": {
+    "service_worker": "./static/js/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["./static/js/content.js", "./static/js/main.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "storage", 
+    "tabs", 
+    "activeTab", 
+    "scripting"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
