@@ -62,7 +62,7 @@ const StatusCode = (res: Response, status: number, name: string): void => {
         document.getElementById('commit_mode')!.style.display = 'inherit'
       })
       chrome.storage.local.set({ leethub_hook: res.full_name }, () => {
-        console.log('Successfully set new repo hook')
+        console.info('Successfully set new repo hook')
       })
       break
   }
@@ -147,7 +147,7 @@ const linkRepo = (token: string, name: string): void => {
           }
         )
         chrome.storage.local.set({ leethub_hook: res.full_name }, () => {
-          console.log('Successfully set new repo hook')
+          console.info('Successfully set new repo hook')
         })
         document.getElementById('hook_mode')!.style.display = 'none'
         document.getElementById('commit_mode')!.style.display = 'inherit'
@@ -168,10 +168,10 @@ const linkRepo = (token: string, name: string): void => {
 
 const unlinkRepo = (): void => {
   chrome.storage.local.set({ mode_type: 'hook' }, () => {
-    console.log(`Unlinking repo`)
+    console.info(`Unlinking repo`)
   })
   chrome.storage.local.set({ leethub_hook: null }, () => {
-    console.log('Defaulted repo hook to NONE')
+    console.info('Defaulted repo hook to NONE')
   })
 
   document.getElementById('hook_mode')!.style.display = 'inherit'

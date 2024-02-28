@@ -3,7 +3,6 @@ export class GitHub {
   private token: string
 
   constructor(hook: string, token: string) {
-    console.log('GitHub constructor', hook, token) // Assuming log function is similar to console.log
     this.hook = hook
     this.token = token
   }
@@ -31,13 +30,6 @@ export class GitHub {
   }
 
   async createTree(refSHA: string, tree_items: any[]): Promise<string> {
-    console.log(
-      'GitHub createTree',
-      'refSHA:',
-      refSHA,
-      'tree_items:',
-      tree_items
-    ) // Assuming log function is similar to console.log
     return createTree(this.hook, this.token, refSHA, tree_items)
   }
 
@@ -46,15 +38,6 @@ export class GitHub {
     treeSHA: string,
     refSHA: string
   ): Promise<string> {
-    console.log(
-      'GitHub createCommit',
-      'message:',
-      message,
-      'treeSHA:',
-      treeSHA,
-      'refSHA:',
-      refSHA
-    ) // Assuming log function is similar to console.log
     return createCommit(this.hook, this.token, message, treeSHA, refSHA)
   }
 
@@ -63,7 +46,6 @@ export class GitHub {
     commitSHA: string,
     force: boolean = true
   ): Promise<string> {
-    console.log('GitHub updateHead', 'ref:', ref, 'commitSHA:', commitSHA) // Assuming log function is similar to console.log
     return updateHead(this.hook, this.token, ref, commitSHA, force)
   }
 

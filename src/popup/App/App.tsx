@@ -1,85 +1,12 @@
-import './App.css'
+import React from 'react'
+import Popup from '../../components/Popup'
 
-import React, { useState, useEffect } from 'react'
-import browser from 'webextension-polyfill'
-import { oAuth2 } from '../../scripts/oauth2'
-
-const Popup: React.FC = () => {
-  const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('hook')
-  const [leethubHook, setLeethubHook] = useState<string>('')
-  const [stats, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
-
-  useEffect(() => {
-    // Simulate fetching data from storage and setting the mode accordingly
-    browser.storage.local
-      .get(['leethub_token', 'mode_type', 'stats', 'leethub_hook'])
-      .then((data: any) => {
-        const { leethub_token, mode_type, stats, leethub_hook } = data
-        console.log('data', data,mode)
-        if (!leethub_token) {
-          setMode('auth')
-        } else {
-          setMode('auth')
-          // setMode(mode_type)
-          setStats(stats)
-          setLeethubHook(leethub_hook)
-        }
-      })
-  }, [])
-
-  const authenticate = () => {
-    oAuth2.begin()
-  }
-
+const App: React.FC = () => {
   return (
-    <div className='ui grid container'>
-      <div className='sixteen wide center aligned column'>
-        <h1 id='title'>
-          Leet<span style={{ color: '#f18500' }}>Hub</span>
-        </h1>
-        <p id='caption'>Sync your code from LeetCode to GitHub</p>
-        <br />
-        {mode === 'auth' && (
-          <div id='auth_mode'>
-            <button
-              className='ui secondary button'
-              onClick={authenticate}
-            >
-              <i className='icon github'></i> Authenticate
-            </button>
-          </div>
-        )}
-        {mode === 'hook' && (
-          <div id='hook_mode'>
-            <a
-              className='ui secondary button'
-              href={`https://github.com/${leethubHook}`}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              <i className='icon github'></i> Set up Hook
-            </a>
-          </div>
-        )}
-        {mode === 'commit' && (
-          <div id='commit_mode'>
-            <p>
-              Repository URL:{' '}
-              <a
-                href={`https://github.com/${leethubHook}`}
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                {leethubHook}
-              </a>
-            </p>
-            <p>Problems Solved: {stats.solved}</p>
-            {/* Display more stats as needed */}
-          </div>
-        )}
-      </div>
+    <div>
+      <Popup />
     </div>
   )
 }
 
-export default Popup
+export default App

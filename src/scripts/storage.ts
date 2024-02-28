@@ -16,7 +16,7 @@ chrome.storage.local.get('isSync', (data: { isSync?: boolean }) => {
   const keys = [
     'leethub_token',
     'leethub_username',
-    'pipe_baekjoonhub',
+    'pipe_leethub',
     'stats',
     'leethub_hook',
     'mode_type'
@@ -28,10 +28,8 @@ chrome.storage.local.get('isSync', (data: { isSync?: boolean }) => {
       })
     })
     chrome.storage.local.set({ isSync: true }, () => {
-      console.log('leethub Synced to local values')
+      console.info('leethub Synced to local values')
     })
-  } else {
-    console.log('leethub Local storage already synced!')
   }
 })
 
@@ -168,8 +166,8 @@ async function getHook(): Promise<string> {
 async function getOrgOption(): Promise<string> {
   try {
     return await getObjectFromLocalStorage('leethub_OrgOption')
-  } catch (ex) {
-    console.log(
+  } catch (error) {
+    console.info(
       'The way it works has changed with updates. Update your storage.'
     )
     await saveObjectInLocalStorage({ leethub_OrgOption: 'platform' })
@@ -266,9 +264,7 @@ async function updateLocalStorageStats(): Promise<Stats> {
     const default_branch = await git.getDefaultBranchOnRepo()
     stats.branches[hook!] = default_branch
     await saveStats(stats)
-    console.log('update stats', stats)
   } else {
-    console.error('Failed to update stats: stats is null')
     throw new Error('Stats is null')
   }
   return stats

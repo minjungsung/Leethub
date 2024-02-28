@@ -14,7 +14,6 @@ export class Toast {
   private element: HTMLElement | null
 
   constructor(message: string, color: string, time: number) {
-    console.log('Constructor', message) // Assuming log function is similar to console.log
     this.message = message
     this.color = color
     this.time = time
@@ -56,7 +55,7 @@ export class Toast {
       element.remove()
     })
 
-    console.log('Closed') // Assuming log function is similar to console.log
+    console.info('Closed')
   }
 
   static raiseToast(message: string, duration: number = 5000): Toast {

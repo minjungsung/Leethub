@@ -15,9 +15,8 @@ async function checkEnable(): Promise<boolean> {
 }
 
 function writeEnableMsgOnLog(): void {
-  const errMsg: string =
-    '확장이 활성화되지 않았습니다. 확장을 활성화하고 시도해주세요'
-  console.log(errMsg)
+  const error: string = '확장이 활성화되지 않았습니다. 확장을 활성화하고 시도해주세요'
+  console.error(error)
 }
 
 export {}

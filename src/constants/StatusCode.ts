@@ -61,7 +61,7 @@ export const StatusCode = (
         document.getElementById('commit_mode')!.style.display = 'inherit'
       })
       chrome.storage.local.set({ leethub_hook: res.full_name }, () => {
-        console.log('Successfully set new repo hook')
+        console.info('Successfully set new repo hook')
       })
       break
   }

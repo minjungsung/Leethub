@@ -1,1 +1,1 @@
-import './popup/index'
+import './index'

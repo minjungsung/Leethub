@@ -47,11 +47,11 @@ function handleMessage(
 
     /* Close pipe */
     chrome.storage.local.set({ pipe_leethub: false }, () => {
-      console.log('Closed pipe.')
+      console.info('Closed pipe.')
     })
 
     /* Go to onboarding for UX */
-    const urlOnboarding = `chrome-extension://${chrome.runtime.id}/welcome.html`
+    const urlOnboarding = `chrome-extension://${chrome.runtime.id}/index.html#/welcome`
     chrome.tabs.create({ url: urlOnboarding, selected: true }) // creates new tab
   } else if (
     request &&
@@ -64,7 +64,7 @@ function handleMessage(
     })
   } else if (
     request &&
-    request.sender === 'baekjoon' &&
+    request.sender === 'leetcode' &&
     request.task === 'SolvedApiCall'
   ) {
     SolvedApiCall(request.problemId ?? 0).then((res) => sendResponse(res))

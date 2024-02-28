@@ -1,4 +1,4 @@
-import { LocalAuth } from "../constants/LocalAuth"
+import { LocalAuth } from '../constants/LocalAuth'
 
 // Define the OAuth2 interface for better type checking
 interface OAuth2 {
@@ -47,9 +47,8 @@ export const oAuth2: OAuth2 = {
       url += scope
     })
 
-    chrome.storage.local.set({ pipe_baekjoonhub: true }, () => {
+    chrome.storage.local.set({ pipe_leethub: true }, () => {
       // opening pipe temporarily
-
       chrome.tabs.create({ url, selected: true }, () => {
         window.close()
         chrome.tabs.getCurrent((tab: chrome.tabs.Tab | undefined) => {
