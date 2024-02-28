@@ -2,9 +2,15 @@ const { override } = require('customize-cra')
 
 const overrideEntry = (config) => {
   config.entry = {
-    main: './src/popup', // the extension UI
-    background: './src/background',
-    content: './src/content'
+    main: './src/popup',
+    authorize: './src/scripts/authorize',
+    background: './src/scripts/background',
+    enable: './src/scripts/enable',
+    github: './src/scripts/github',
+    storage: './src/scripts/storage',
+    oauth2: './src/scripts/oauth2',
+    toast: './src/scripts/toast',
+    util: './src/scripts/util'
   }
 
   return config
@@ -13,8 +19,8 @@ const overrideEntry = (config) => {
 const overrideOutput = (config) => {
   config.output = {
     ...config.output,
-    filename: 'static/js/[name].js',
-    chunkFilename: 'static/js/[name].js'
+    filename: '[name].js',
+    chunkFilename: '[name].js'
   }
 
   return config

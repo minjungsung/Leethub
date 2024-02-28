@@ -1,9 +1,19 @@
-// Assuming chrome types are available, if not, you might need to install @types/chrome
-// npm install --save-dev @types/chrome
+import { LocalAuth } from "../constants/LocalAuth"
 
-import { OAuth2 } from '../types/OAuth2'
+// Define the OAuth2 interface for better type checking
+interface OAuth2 {
+  KEY: string
+  ACCESS_TOKEN_URL: string
+  AUTHORIZATION_URL: string
+  CLIENT_ID: string
+  CLIENT_SECRET: string
+  REDIRECT_URL: string
+  SCOPES: string[]
+  init: () => void
+  begin: () => void
+}
 
-const oAuth2: OAuth2 = {
+export const oAuth2: OAuth2 = {
   KEY: '',
   ACCESS_TOKEN_URL: '',
   AUTHORIZATION_URL: '',
@@ -12,32 +22,38 @@ const oAuth2: OAuth2 = {
   REDIRECT_URL: '',
   SCOPES: [],
 
+  /**
+   * Initialize
+   */
   init() {
-    this.KEY = 'leethub_token'
-    this.ACCESS_TOKEN_URL = 'https://github.com/login/oauth/access_token'
-    this.AUTHORIZATION_URL = 'https://github.com/login/oauth/authorize'
-    this.CLIENT_ID = 'beb4f0aa19ab8faf5004'
-    this.CLIENT_SECRET = 'REMOVED_EXPOSED_CREDENTIAL'
-    this.REDIRECT_URL = 'https://github.com/'
-    this.SCOPES = ['repo']
+    this.KEY = LocalAuth.KEY
+    this.ACCESS_TOKEN_URL = LocalAuth.ACCESS_TOKEN_URL
+    this.AUTHORIZATION_URL = LocalAuth.AUTHORIZATION_URL
+    this.CLIENT_ID = LocalAuth.CLIENT_ID
+    this.CLIENT_SECRET = LocalAuth.CLIENT_SECRET
+    this.REDIRECT_URL = LocalAuth.REDIRECT_URL
+    this.SCOPES = LocalAuth.SCOPES
   },
 
+  /**
+   * Begin
+   */
   begin() {
-    this.init() // Initialize with secure token params.
+    this.init() // secure token params.
 
-    let url = `${this.AUTHORIZATION_URL}?client_id=${this.CLIENT_ID}&redirect_uri=${this.REDIRECT_URL}&scope=`
+    let url: string = `${this.AUTHORIZATION_URL}?client_id=${this.CLIENT_ID}&redirect_uri=${this.REDIRECT_URL}&scope=`
 
     this.SCOPES.forEach((scope) => {
       url += scope
     })
 
-    chrome.storage.local.set({ pipe_leethub: true }, () => {
-      chrome.tabs.create({ url, active: true }, () => {
+    chrome.storage.local.set({ pipe_baekjoonhub: true }, () => {
+      // opening pipe temporarily
+
+      chrome.tabs.create({ url, selected: true }, () => {
         window.close()
-        chrome.tabs.getCurrent((tab) => {
-          if (tab?.id) {
-            chrome.tabs.remove(tab.id)
-          }
+        chrome.tabs.getCurrent((tab: chrome.tabs.Tab | undefined) => {
+          // chrome.tabs.remove(tab?.id ?? 0, () => {});
         })
       })
     })

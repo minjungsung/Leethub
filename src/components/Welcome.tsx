@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Button, Dropdown, Input, Form } from 'semantic-ui-react'
-import 'semantic-ui-css/semantic.min.css'
 
 const Welcome: React.FC = () => {
   const [hookModeVisible, setHookModeVisible] = useState(false)

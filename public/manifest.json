@@ -8,23 +8,36 @@
   "homepage_url": "https://github.com/minjungsung/LeetHub",
   "icons": {},
   "background": {
-    "service_worker": "./static/js/background.js"
+    "service_worker": "background.js"
   },
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["./static/js/content.js", "./static/js/main.js"]
+      "css": [],
+      "js": [
+        "toast.js",
+        "util.js",
+        "github.js",
+        "authorize.js",
+        "storage.js",
+        "enable.js",
+        "oauth2.js"
+      ],
+      "exclude_matches": [],
+      "include_globs": [],
+      "exclude_globs": [],
+      "all_frames": false,
+      "match_origin_as_fallback": false,
+      "match_about_blank": false,
+      "run_at": "document_idle",
+      "world": "ISOLATED"
     }
   ],
   "action": {
     "default_popup": "index.html"
   },
-  "permissions": [
-    "storage", 
-    "tabs", 
-    "activeTab", 
-    "scripting"
-  ],
+  "permissions": ["storage", "tabs", "activeTab", "scripting"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
   },

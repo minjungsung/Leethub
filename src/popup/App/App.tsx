@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import browser from 'webextension-polyfill' 
 import './App.css'
 
+import React, { useState, useEffect } from 'react'
+import browser from 'webextension-polyfill'
+import { oAuth2 } from '../../scripts/oauth2'
+
 const Popup: React.FC = () => {
-  const [mode, setMode] = useState<'auth' | 'hook' | 'commit' | 'none'>('none')
+  const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('hook')
   const [leethubHook, setLeethubHook] = useState<string>('')
   const [stats, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
 
@@ -11,12 +13,14 @@ const Popup: React.FC = () => {
     // Simulate fetching data from storage and setting the mode accordingly
     browser.storage.local
       .get(['leethub_token', 'mode_type', 'stats', 'leethub_hook'])
-      .then((data) => {
+      .then((data: any) => {
         const { leethub_token, mode_type, stats, leethub_hook } = data
+        console.log('data', data,mode)
         if (!leethub_token) {
           setMode('auth')
         } else {
-          setMode(mode_type) // Assuming 'mode_type' is either 'hook' or 'commit'
+          setMode('auth')
+          // setMode(mode_type)
           setStats(stats)
           setLeethubHook(leethub_hook)
         }
@@ -24,11 +28,7 @@ const Popup: React.FC = () => {
   }, [])
 
   const authenticate = () => {
-    console.log('Authenticating...')
-    browser.runtime.sendMessage({
-      target: 'content',
-      action: 'authenticate'
-    })
+    oAuth2.begin()
   }
 
   return (
