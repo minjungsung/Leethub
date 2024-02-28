@@ -22,7 +22,13 @@
         "authorize.js",
         "storage.js",
         "enable.js",
-        "oauth2.js"
+        "oauth2.js",
+        "leetcode.js",
+        "leetcode/variables.js",
+        "leetcode/util.js",
+        "leetcode/parsing.js",
+        "leetcode/programmers.js",
+        "leetcode/uploadfunctions.js"
       ],
       "exclude_matches": [],
       "include_globs": [],

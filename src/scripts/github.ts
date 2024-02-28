@@ -195,6 +195,7 @@ async function getTree(hook: string, token: string): Promise<any[]> {
       }
     }
   )
+  console.log('gettree', await response.json())
   const data = await response.json()
   return data.tree
 }

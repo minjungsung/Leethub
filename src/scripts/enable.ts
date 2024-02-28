@@ -8,7 +8,7 @@ async function getObjectFromLocalStorage(key: string): Promise<any> {
   })
 }
 
-async function checkEnable(): Promise<boolean> {
+export async function checkEnable(): Promise<boolean> {
   const enable: boolean = await getObjectFromLocalStorage('bjhEnable')
   if (!enable) writeEnableMsgOnLog()
   return enable

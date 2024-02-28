@@ -83,7 +83,7 @@ async function saveObjectInLocalStorage(obj: object): Promise<void> {
  * Chrome Local StorageArea에서 개체 제거
  * @param {string | string[]} keys
  */
-async function removeObjectFromLocalStorage(
+export async function removeObjectFromLocalStorage(
   keys: string | string[]
 ): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -101,7 +101,7 @@ async function removeObjectFromLocalStorage(
  * Chrome의 Sync StorageArea에서 개체 가져오기
  * @param {string} key
  */
-async function getObjectFromSyncStorage(key: string): Promise<any> {
+export async function getObjectFromSyncStorage(key: string): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
       chrome.storage.sync.get(key, (value: { [key: string]: any }) => {
@@ -117,7 +117,7 @@ async function getObjectFromSyncStorage(key: string): Promise<any> {
  * Chrome의 Sync StorageArea에 개체 저장
  * @param {*} obj
  */
-async function saveObjectInSyncStorage(obj: object): Promise<void> {
+export async function saveObjectInSyncStorage(obj: object): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
       chrome.storage.sync.set(obj, () => {
@@ -133,7 +133,7 @@ async function saveObjectInSyncStorage(obj: object): Promise<void> {
  * Chrome Sync StorageArea에서 개체 제거
  * @param {string | string[]} keys
  */
-async function removeObjectFromSyncStorage(
+export async function removeObjectFromSyncStorage(
   keys: string | string[]
 ): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -147,19 +147,19 @@ async function removeObjectFromSyncStorage(
   })
 }
 
-async function getToken(): Promise<string> {
+export async function getToken(): Promise<string> {
   return await getObjectFromLocalStorage('leethub_token')
 }
 
-async function getGithubUsername(): Promise<string> {
+export async function getGithubUsername(): Promise<string> {
   return await getObjectFromLocalStorage('leethub_username')
 }
 
-async function getStats(): Promise<Stats> {
+export async function getStats(): Promise<Stats> {
   return await getObjectFromLocalStorage('stats')
 }
 
-async function getHook(): Promise<string> {
+export async function getHook(): Promise<string> {
   return await getObjectFromLocalStorage('leethub_hook')
 }
 
@@ -175,19 +175,19 @@ async function getOrgOption(): Promise<string> {
   }
 }
 
-async function getModeType(): Promise<string | null> {
+export async function getModeType(): Promise<string | null> {
   return await getObjectFromLocalStorage('mode_type')
 }
 
-async function saveToken(token: string): Promise<void> {
+export async function saveToken(token: string): Promise<void> {
   return await saveObjectInLocalStorage({ leethub_token: token })
 }
 
-async function saveStats(stats: Stats): Promise<void> {
+export async function saveStats(stats: Stats): Promise<void> {
   return await saveObjectInLocalStorage({ stats })
 }
 
-async function updateStatsSHAfromPath(
+export async function updateStatsSHAfromPath(
   path: string,
   sha: string
 ): Promise<void> {
@@ -200,7 +200,7 @@ async function updateStatsSHAfromPath(
   }
 }
 
-function updateObjectDatafromPath(
+export function updateObjectDatafromPath(
   obj: Record<string, any>,
   path: string,
   data: string
@@ -216,7 +216,9 @@ function updateObjectDatafromPath(
   current[pathArray.pop()!] = data
 }
 
-async function getStatsSHAfromPath(path: string): Promise<string | null> {
+export async function getStatsSHAfromPath(
+  path: string
+): Promise<string | null> {
   const stats = await getStats()
   if (!stats) {
     return null
@@ -239,7 +241,7 @@ function getObjectDatafromPath(
   return current[pathArray.pop()!] || null
 }
 
-async function updateLocalStorageStats(): Promise<Stats> {
+export async function updateLocalStorageStats(): Promise<Stats> {
   const hook = await getHook()
   const token = await getToken()
   // Assuming GitHub is a class that has been defined elsewhere
@@ -270,7 +272,7 @@ async function updateLocalStorageStats(): Promise<Stats> {
   return stats
 }
 
-async function getDirNameByOrgOption(
+export async function getDirNameByOrgOption(
   dirName: string,
   language: string
 ): Promise<string> {

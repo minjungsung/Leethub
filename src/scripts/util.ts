@@ -107,7 +107,7 @@ function unescapeHtml(text: string): string {
  * @param text - 변환할 문자열
  * @returns 전각문자로 변환된 문자열
  */
-function convertSingleCharToDoubleChar(text: string): string {
+export function convertSingleCharToDoubleChar(text: string): string {
   const map = {
     '!': '！',
     '%': '％',

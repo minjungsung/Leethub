@@ -13,6 +13,7 @@
     "@types/webextension-polyfill": "^0.10.7",
     "customize-cra": "^1.0.0",
     "jquery": "^3.7.1",
+    "js-sha1": "^0.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.1",
