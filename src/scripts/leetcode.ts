@@ -126,9 +126,6 @@ const upload = (
           }
           stats.sha[filePath] = updatedSha // update sha key.
           chrome.storage.local.set({ stats }, () => {
-            console.log(`Successfully committed ${filename} to github`)
-
-            // if callback is defined, call it
             if (cb) {
               cb()
             }
@@ -430,7 +427,6 @@ function parseStats(): string | null {
 
 document.addEventListener('click', (event) => {
   return
-  console.log('click', event)
   const element = event.target as HTMLElement
   const oldPath = window.location.pathname
 

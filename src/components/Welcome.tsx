@@ -1,8 +1,42 @@
-import React from 'react'
-import '../css/welcome.css' // Adjust the path as necessary
-import 'semantic-ui-css/semantic.min.css'
+import React, { useState } from 'react'
+import browser from 'webextension-polyfill'
 
-const Welcome = () => {
+import '../css/welcome.css'
+import 'semantic-ui-css/semantic.min.css'
+import { createRepo, linkRepo } from '../scripts/welcome'
+
+const Welcome: React.FC = () => {
+  const [repository, setRepository] = useState<string>('')
+  const [repOption, setRepOption] = useState<string>('')
+  const [orgOption, setOrgOption] = useState<string>('')
+  const handleGetStartedClick = async () => {
+    const data = await browser.storage.local.get('leethub_token')
+    const token = data.leethub_token
+    if (!token) {
+      // Not authorized yet.
+      document.getElementById('error')!.textContent =
+        'Authorization error - Grant BaekjoonHub access to your GitHub account to continue (launch extension to proceed)'
+      document.getElementById('error')!.style.display = 'block'
+      document.getElementById('success')!.style.display = 'none'
+    } else if (repOption === 'new') {
+      // Assuming createRepo is a function defined elsewhere in the codebase.
+      createRepo(token, repository)
+    } else {
+      const data2 = await browser.storage.local.get('leethub_username')
+      const username = data2.leethub_username
+      if (!username) {
+        // Improper authorization.
+        document.getElementById('error')!.textContent =
+          'Improper Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
+        document.getElementById('error')!.style.display = 'block'
+        document.getElementById('success')!.style.display = 'none'
+      } else {
+        // Assuming linkRepo is a function defined elsewhere in the codebase.
+        linkRepo(token, `${username}/${repository}`)
+      }
+    }
+  }
+
   return (
     <div className='ui grid container'>
       <div className='sixteen wide center aligned column'>
@@ -43,7 +77,6 @@ const Welcome = () => {
 
       {/* Create Hook */}
       <div
-        style={{ display: 'none' }}
         id='hook_mode'
         className='ui grid container'
       >
@@ -55,7 +88,11 @@ const Welcome = () => {
         <div className='four wide left aligned column'>
           <div className='ui form'>
             <div className='field'>
-              <select id='type'>
+              <select
+                id='type'
+                value={repOption}
+                onChange={(e) => setRepOption(e.target.value)}
+              >
                 <option value=''>Pick an Option</option>
                 <option value='new'>Create a new Private Repository</option>
                 <option value='link'>Link an Existing Repository</option>
@@ -63,7 +100,11 @@ const Welcome = () => {
             </div>
 
             <div className='field'>
-              <select id='org_option'>
+              <select
+                id='org_option'
+                value={orgOption}
+                onChange={(e) => setOrgOption(e.target.value)}
+              >
                 <option value='platform'>Organize by Platform</option>
                 <option value='language'>Organize by Language</option>
               </select>
@@ -77,8 +118,10 @@ const Welcome = () => {
               <input
                 autoComplete='off'
                 id='name'
-                placeholder='Repository Name'
                 type='text'
+                placeholder='Repository Name'
+                value={repository}
+                onChange={(e) => setRepository(e.target.value)}
               />
             </div>
           </div>
@@ -88,8 +131,9 @@ const Welcome = () => {
           <br />
           <button
             id='hook_button'
-            disabled
             className='positive ui button'
+            disabled={repository === '' || repOption === ''}
+            onClick={handleGetStartedClick}
           >
             Get Started
           </button>
@@ -98,7 +142,6 @@ const Welcome = () => {
 
       {/* Show stats */}
       <div
-        style={{ display: 'none' }}
         id='commit_mode'
         className='ui grid container'
       >

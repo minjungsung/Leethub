@@ -5,8 +5,10 @@ import browser from 'webextension-polyfill'
 import { oAuth2 } from '../scripts/oauth2'
 
 const Popup: React.FC = () => {
-  const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('hook')
-  const [leethubHook, setLeethubHook] = useState<string>('')
+  const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('auth')
+  const [leethubHook, setLeethubHook] = useState<string>(
+    `chrome-extension://${chrome.runtime.id}/index.html#/welcome`
+  )
   const [stats, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
 
   useEffect(() => {
@@ -17,11 +19,11 @@ const Popup: React.FC = () => {
         const { leethub_token, mode_type, stats, leethub_hook } = data
         if (!leethub_token) {
           setMode('auth')
+        } else if (leethub_token && !leethub_hook) {
+          setMode('hook')
         } else {
-          setMode('auth')
-          // setMode(mode_type)
+          setMode('commit')
           setStats(stats)
-          setLeethubHook(leethub_hook)
         }
       })
   }, [])
@@ -52,7 +54,7 @@ const Popup: React.FC = () => {
           <div id='hook_mode'>
             <a
               className='ui secondary button'
-              href={`https://github.com/${leethubHook}`}
+              href={leethubHook}
               target='_blank'
               rel='noopener noreferrer'
             >
@@ -65,7 +67,7 @@ const Popup: React.FC = () => {
             <p>
               Repository URL:{' '}
               <a
-                href={`https://github.com/${leethubHook}`}
+                href={leethubHook}
                 target='_blank'
                 rel='noopener noreferrer'
               >

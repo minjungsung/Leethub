@@ -39,10 +39,8 @@ export const oAuth2: OAuth2 = {
    * Begin
    */
   begin() {
-    this.init() // secure token params.
-
+    this.init()
     let url: string = `${this.AUTHORIZATION_URL}?client_id=${this.CLIENT_ID}&redirect_uri=${this.REDIRECT_URL}&scope=`
-
     this.SCOPES.forEach((scope) => {
       url += scope
     })

@@ -1,4 +1,5 @@
 import { Response } from '../constants/StatusCode'
+import $ from 'jquery'
 
 const option = (): string => {
   return $('#type').val() as string
@@ -68,7 +69,7 @@ const StatusCode = (res: Response, status: number, name: string): void => {
   }
 }
 
-const createRepo = (token: string, name: string): void => {
+export const createRepo = (token: string, name: string): void => {
   const AUTHENTICATION_URL = 'https://api.github.com/user/repos'
   let data = JSON.stringify({
     name,
@@ -126,7 +127,7 @@ const linkStatusCode = (status: number, name: string): boolean => {
   return bool
 }
 
-const linkRepo = (token: string, name: string): void => {
+export const linkRepo = (token: string, name: string): void => {
   const AUTHENTICATION_URL = `https://api.github.com/repos/${name}`
 
   const xhr = new XMLHttpRequest()

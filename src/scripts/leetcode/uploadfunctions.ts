@@ -1,17 +1,8 @@
 // Assuming the existence of these functions and classes. You might need to adjust these based on your actual implementation.
 
+import { GitHub } from "../github"
 import { getHook, getStats, getToken, saveStats, updateObjectDatafromPath } from "../storage"
 import { isNull } from "../util"
-
-declare class GitHub {
-  constructor(hook: string, token: string);
-  getDefaultBranchOnRepo(): Promise<string>;
-  getReference(branch: string): Promise<{ refSHA: string; ref: string }>;
-  createBlob(content: string, path: string): Promise<{ sha: string; path: string }>;
-  createTree(baseSHA: string, blobs: Array<{ sha: string; path: string }>): Promise<string>;
-  createCommit(message: string, treeSHA: string, parentSHA: string): Promise<string>;
-  updateHead(ref: string, commitSHA: string): Promise<void>;
-}
 
 export interface BojData {
   code: string;

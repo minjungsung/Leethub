@@ -1,13 +1,10 @@
-html {
-  text-align: center;
-}
-
 body {
   background-color: #363636 !important;
   padding: 10px;
   text-align: center;
   transition: background-color 0.75s ease;
   font-family: 'Helvetica Neue', 'Lucida Grande', sans-serif;
+  width: auto !important;
 }
 
 #title {

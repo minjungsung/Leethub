@@ -1,7 +1,9 @@
+import '../css/app.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { HashRouter as Router, Route, Routes } from 'react-router-dom'
+
 import App from './App/App'
-import { HashRouter as Router, Route, Routes } from 'react-router-dom' // Use HashRouter
 import Welcome from '../components/Welcome'
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
