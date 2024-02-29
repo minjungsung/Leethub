@@ -1,6 +1,3 @@
-// Assuming the existence of helper functions like isNull and getVersion, which are not defined in the provided code.
-// These would need to be implemented or imported for the TypeScript version to work as expected.
-
 import { GitHub } from './github'
 import { getVersion, isNull } from './util'
 
@@ -11,7 +8,6 @@ interface Stats {
   problems?: any
 }
 
-/* Sync to local storage */
 chrome.storage.local.get('isSync', (data: { isSync?: boolean }) => {
   const keys = [
     'leethub_token',
@@ -33,11 +29,10 @@ chrome.storage.local.get('isSync', (data: { isSync?: boolean }) => {
   }
 })
 
-/* stats 초기값이 없는 경우, 기본값을 생성하고 stats를 업데이트한다. */
 getStats().then(async (stats: Stats | null) => {
-  stats = stats ?? {} // Use nullish coalescing operator to ensure stats is an object
+  stats = stats ?? {}
   if (isNull(stats.version)) stats.version = '0.0.0'
-  const currentVersion = getVersion() // Await the result of getVersion
+  const currentVersion = getVersion()
   if (isNull(stats.branches) || stats.version !== currentVersion)
     stats.branches = {}
   if (isNull(stats.submission) || stats.version !== currentVersion)
@@ -47,10 +42,6 @@ getStats().then(async (stats: Stats | null) => {
   saveStats(stats)
 })
 
-/**
- * Chrome의 Local StorageArea에서 개체 가져오기
- * @param {string} key
- */
 async function getObjectFromLocalStorage(key: string): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
@@ -63,10 +54,6 @@ async function getObjectFromLocalStorage(key: string): Promise<any> {
   })
 }
 
-/**
- * Chrome의 Local StorageArea에 개체 저장
- * @param {*} obj
- */
 async function saveObjectInLocalStorage(obj: object): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
@@ -79,10 +66,6 @@ async function saveObjectInLocalStorage(obj: object): Promise<void> {
   })
 }
 
-/**
- * Chrome Local StorageArea에서 개체 제거
- * @param {string | string[]} keys
- */
 export async function removeObjectFromLocalStorage(
   keys: string | string[]
 ): Promise<void> {
@@ -97,10 +80,6 @@ export async function removeObjectFromLocalStorage(
   })
 }
 
-/**
- * Chrome의 Sync StorageArea에서 개체 가져오기
- * @param {string} key
- */
 export async function getObjectFromSyncStorage(key: string): Promise<any> {
   return new Promise((resolve, reject) => {
     try {
@@ -113,10 +92,6 @@ export async function getObjectFromSyncStorage(key: string): Promise<any> {
   })
 }
 
-/**
- * Chrome의 Sync StorageArea에 개체 저장
- * @param {*} obj
- */
 export async function saveObjectInSyncStorage(obj: object): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
@@ -129,10 +104,6 @@ export async function saveObjectInSyncStorage(obj: object): Promise<void> {
   })
 }
 
-/**
- * Chrome Sync StorageArea에서 개체 제거
- * @param {string | string[]} keys
- */
 export async function removeObjectFromSyncStorage(
   keys: string | string[]
 ): Promise<void> {
@@ -244,7 +215,7 @@ function getObjectDatafromPath(
 export async function updateLocalStorageStats(): Promise<Stats> {
   const hook = await getHook()
   const token = await getToken()
-  // Assuming GitHub is a class that has been defined elsewhere
+
   const git = new GitHub(hook, token)
   const stats = await getStats()
   const tree_items: any[] = []

@@ -1,10 +1,7 @@
-// Assuming the existence of a log function not defined in the provided code.
-// This would need to be implemented or imported for the TypeScript version to work as expected.
-
 enum ToastType {
   Danger = '#eb3b5a',
   Warning = '#fdcb6e',
-  Success = '#00b894' // Corrected typo from "Succes" to "Success"
+  Success = '#00b894'
 }
 
 export class Toast {

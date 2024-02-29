@@ -1,6 +1,5 @@
 import { LocalAuth } from '../constants/LocalAuth'
 
-// Define the OAuth2 interface for better type checking
 interface OAuth2 {
   KEY: string
   ACCESS_TOKEN_URL: string
@@ -22,9 +21,6 @@ export const oAuth2: OAuth2 = {
   REDIRECT_URL: '',
   SCOPES: [],
 
-  /**
-   * Initialize
-   */
   init() {
     this.KEY = LocalAuth.KEY
     this.ACCESS_TOKEN_URL = LocalAuth.ACCESS_TOKEN_URL
@@ -46,7 +42,6 @@ export const oAuth2: OAuth2 = {
     })
 
     chrome.storage.local.set({ pipe_leethub: true }, () => {
-      // opening pipe temporarily
       chrome.tabs.create({ url, selected: true }, () => {
         window.close()
         chrome.tabs.getCurrent((tab: chrome.tabs.Tab | undefined) => {

@@ -1,5 +1,3 @@
-// Assuming getObjectFromLocalStorage is a function that retrieves data from local storage and returns a Promise.
-// If its implementation is not available, it's assumed to be something like this:
 async function getObjectFromLocalStorage(key: string): Promise<any> {
   return new Promise((resolve) => {
     chrome.storage.local.get([key], (result) => {

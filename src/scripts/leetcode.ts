@@ -1,4 +1,3 @@
-// Assuming an interface for stats stored in chrome storage
 interface Stats {
   solved: number
   easy: number
@@ -7,7 +6,6 @@ interface Stats {
   sha: { [key: string]: string | null }
 }
 
-// Assuming an interface for the chrome storage local get callback data
 interface ChromeStorageData {
   leethub_token?: string
   mode_type?: string
@@ -16,12 +14,10 @@ interface ChromeStorageData {
   isSync?: boolean
 }
 
-// Assuming an interface for GitHub API response for content
 interface GitHubContentResponse {
   content: { sha: string }
 }
 
-// Enum for languages supported by LeetCode.
 const languages: { [key: string]: string } = {
   Python: '.py',
   Python3: '.py',
@@ -44,21 +40,15 @@ const languages: { [key: string]: string } = {
   Oracle: '.sql'
 }
 
-// Commit messages
 const readmeMsg: string = 'Create README - LeetHub'
 const discussionMsg: string = 'Prepend discussion post - LeetHub'
 const createNotesMsg: string = 'Attach NOTES - LeetHub'
 
-// Problem types
 const NORMAL_PROBLEM: number = 0
 const EXPLORE_SECTION_PROBLEM: number = 1
 
-// Difficulty of most recently submitted question
 let difficulty: string = ''
 
-// State of upload for progress
-
-// Get file extension for submission
 function findLanguage(): string | null {
   const tag: Element[] = [
     ...Array.from(
@@ -71,14 +61,13 @@ function findLanguage(): string | null {
       const elem: Element = tag[i]
       const textContent: string | null = elem.textContent
       if (textContent !== null && languages[textContent] !== undefined) {
-        return languages[textContent] // Should generate respective file extension
+        return languages[textContent]
       }
     }
   }
   return null
 }
 
-// Main function for uploading code to GitHub repo, and callback cb is called if success
 const upload = (
   token: string,
   hook: string,
@@ -89,10 +78,8 @@ const upload = (
   msg: string,
   cb?: () => void
 ): void => {
-  // To validate user, load user object from GitHub.
   const URL: string = `https://api.github.com/repos/${hook}/contents/${directory}/${filename}`
 
-  // Define Payload
   let data: string = JSON.stringify({
     message: msg,
     content: code,
@@ -105,7 +92,7 @@ const upload = (
       if (xhr.status === 200 || xhr.status === 201) {
         const updatedSha: string = (
           JSON.parse(xhr.responseText) as GitHubContentResponse
-        ).content.sha // Get updated SHA.
+        ).content.sha
 
         chrome.storage.local.get('stats', (data2: ChromeStorageData): void => {
           let stats: Stats = data2.stats || {
@@ -116,15 +103,13 @@ const upload = (
             sha: {}
           }
           const filePath: string = directory + filename
-          // Only increment solved problems statistics once
-          // New submission commits twice (README and problem)
           if (filename === 'README.md' && sha === null) {
             stats.solved += 1
             stats.easy += difficulty === 'Easy' ? 1 : 0
             stats.medium += difficulty === 'Medium' ? 1 : 0
             stats.hard += difficulty === 'Hard' ? 1 : 0
           }
-          stats.sha[filePath] = updatedSha // update sha key.
+          stats.sha[filePath] = updatedSha
           chrome.storage.local.set({ stats }, () => {
             if (cb) {
               cb()
@@ -370,13 +355,13 @@ function convertToSlug(string: string): string {
   return string
     .toString()
     .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(p, (c) => b.charAt(a.indexOf(c))) // Replace special characters
-    .replace(/&/g, '-and-') // Replace & with 'and'
-    .replace(/[^\w\-]+/g, '') // Remove all non-word characters
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, '') // Trim - from end of text
+    .replace(/\s+/g, '-')
+    .replace(p, (c) => b.charAt(a.indexOf(c)))
+    .replace(/&/g, '-and-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '')
 }
 
 /* Function to get the problem name slug */
@@ -410,7 +395,6 @@ function parseQuestion(): string | number | boolean {
   return false
 }
 
-/* Parser function for time/space stats */
 function parseStats(): string | null {
   const probStats = document.getElementsByClassName('data__HC-i')
   if (!checkElem(probStats)) {
@@ -420,8 +404,7 @@ function parseStats(): string | null {
   const timePercentile = probStats[1].textContent
   const space = probStats[2].textContent
   const spacePercentile = probStats[3].textContent
-
-  // Format commit message
+ 
   return `Time: ${time} (${timePercentile}), Space: ${space} (${spacePercentile}) - LeetHub`
 }
 
@@ -430,7 +413,6 @@ document.addEventListener('click', (event) => {
   const element = event.target as HTMLElement
   const oldPath = window.location.pathname
 
-  /* Act on Post button click */
   if (
     element.classList.contains('icon__3Su4') ||
     element.parentElement?.classList.contains('icon__3Su4') ||
@@ -438,7 +420,6 @@ document.addEventListener('click', (event) => {
     element.parentElement?.classList.contains('header-right__2UzF')
   ) {
     setTimeout(function () {
-      /* Only post if post button was clicked and url changed */
       if (
         oldPath !== window.location.pathname &&
         oldPath === window.location.pathname.substring(0, oldPath.length) &&
@@ -449,7 +430,7 @@ document.addEventListener('click', (event) => {
           date.getMonth() + 1
         }/${date.getFullYear()} at ${date.getHours()}:${date.getMinutes()}`
         const addition = `[Discussion Post (created on ${currentDate})](${window.location})  \n`
-        const problemName = window.location.pathname.split('/')[2] // must be true.
+        const problemName = window.location.pathname.split('/')[2]
 
         uploadGit(addition, problemName, 'README.md', discussionMsg, 'update')
       }
@@ -457,7 +438,6 @@ document.addEventListener('click', (event) => {
   }
 })
 
-/* Function to get the notes if there is any */
 function getNotesIfAny(): string {
   if (document.URL.startsWith('https://leetcode.com/explore/')) return ''
 
@@ -551,7 +531,7 @@ const loader = setInterval(() => {
             btoa(unescape(encodeURIComponent(probStatement))),
             problemName,
             'README.md',
-            'readmeMsg', // Assuming 'readmeMsg' is defined elsewhere
+            'readmeMsg',
             'upload'
           )
         }
@@ -564,27 +544,27 @@ const loader = setInterval(() => {
             btoa(unescape(encodeURIComponent(notes))),
             problemName,
             'NOTES.md',
-            'createNotesMsg', // Assuming 'createNotesMsg' is defined elsewhere
+            'createNotesMsg',
             'upload'
           )
         }, 500)
       }
 
-      // setTimeout(() => {
-      //   findCode(
-      //     uploadGit,
-      //     problemName,
-      //     `${problemName}${language}`,
-      //     probStats || '',
-      //     'upload',
-      //     () => {
-      //       if (uploadState.countdown) clearTimeout(uploadState.countdown);
-      //       delete uploadState.countdown;
-      //       uploadState.uploading = false;
-      //       markUploaded();
-      //     },
-      //   );
-      // }, 1000);
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
     }
   }
 }, 1000)
@@ -688,5 +668,4 @@ function injectStyle(): void {
 }
 
 injectStyle()
-
 export {}

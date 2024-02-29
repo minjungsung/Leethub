@@ -54,9 +54,6 @@ export class GitHub {
   }
 }
 
-// The helper functions below are assumed to be similar to their JavaScript counterparts,
-// with added TypeScript annotations for parameters and return types.
-
 async function getDefaultBranchOnRepo(
   hook: string,
   token: string
@@ -195,6 +192,7 @@ async function getTree(hook: string, token: string): Promise<any[]> {
       }
     }
   )
+
   const data = await response.json()
   return data.tree
 }
