@@ -10,23 +10,23 @@ import { getVersion, isNull } from '../util'
 import { parseData } from './parsing'
 import { uploadOneSolveProblemOnGit } from './uploadfunctions'
 import { isNotEmpty, markUploadedCSS, startUpload } from './util'
-import { BojData } from '../../types/BoJData'
+import { LeetcodeData } from '../../types/LeetcodeData'
 import { checkEnable } from '../enable'
 
-// Set to true to enable console log
 let loader: number | undefined
 
 startLoader()
 
 function startLoader(): void {
   loader = window.setInterval(async () => {
-    const enable: boolean = await checkEnable()
+    // const enable: boolean = await checkEnable()
+    const enable: boolean = true
     if (!enable) stopLoader()
     else if (getSolvedResult()) {
       stopLoader()
       try {
-        const bojData = await parseData()
-        await beginUpload(bojData)
+        const leetcodeData = await parseData()
+        await beginUpload(leetcodeData)
       } catch (error) {
         console.error(error)
       }
@@ -47,8 +47,8 @@ function getSolvedResult(): boolean {
   return result?.innerText === 'Accepted'
 }
 
-async function beginUpload(bojData: BojData): Promise<void> {
-  if (isNotEmpty(bojData)) {
+async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
+  if (isNotEmpty(leetcodeData)) {
     startUpload()
 
     const stats = await getStats()
@@ -63,14 +63,14 @@ async function beginUpload(bojData: BojData): Promise<void> {
     }
 
     let cachedSHA: string | null = await getStatsSHAfromPath(
-      `${hook}/${bojData.directory}/${bojData.fileName}`
+      `${hook}/${leetcodeData.title}.${leetcodeData.language}`
     )
-    let calcSHA: string = calculateBlobSHA(bojData.code)
+    let calcSHA: string = calculateBlobSHA(leetcodeData.codeSnippet)
     if (cachedSHA === calcSHA) {
-      markUploadedCSS(stats.branches, bojData.directory)
+      markUploadedCSS(stats.branches, leetcodeData.link)
       return
     }
-    await uploadOneSolveProblemOnGit(bojData, markUploadedCSS)
+    await uploadOneSolveProblemOnGit(leetcodeData, markUploadedCSS)
   }
 }
 

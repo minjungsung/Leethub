@@ -1,47 +1,29 @@
-// Define the request and sender types for better type checking
 import { WELCOME_URL } from '../constants/Url'
 import { Request } from '../types/Request'
 interface Sender {
   // Define any properties used from the sender object here
 }
 
-// Define the response type, if needed
 type SendResponse = (response?: any) => void
 
-/**
- * Fetches problem data from solved.ac.
- * @param problemId The ID of the problem to fetch.
- */
 async function SolvedApiCall(problemId: number): Promise<any> {
   return fetch(`https://solved.ac/api/v3/problem/show?problemId=${problemId}`, {
     method: 'GET'
   }).then((query) => query.json())
 }
 
-/**
- * Handles messages sent to the background script.
- * @param request The request object sent by the sender.
- * @param sender The sender of the message.
- * @param sendResponse The callback function to send a response back to the sender.
- */
 function handleMessage(
   request: Request,
   sender: Sender,
   sendResponse: SendResponse
 ): boolean {
   if (request && request.closeWebPage === true && request.isSuccess === true) {
-    /* Set username */
     chrome.storage.local.set({ leethub_username: request.username })
-
-    /* Set token */
     chrome.storage.local.set({ leethub_token: request.token })
-
-    /* Close pipe */
     chrome.storage.local.set({ pipe_leethub: false }, () => {
       console.info('Closed pipe.')
     })
 
-    /* Go to onboarding for UX */
     chrome.tabs.create({ url: WELCOME_URL, selected: true }) // creates new tab
   } else if (
     request &&

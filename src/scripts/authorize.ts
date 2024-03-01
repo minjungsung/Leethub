@@ -101,7 +101,6 @@ const localAuth: LocalAuth = {
 localAuth.init() // load params.
 const link = window.location.href
 
-/* Check for open pipe */
 if (window.location.host === 'github.com') {
   chrome.storage.local.get(
     'pipe_leethub',
