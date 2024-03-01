@@ -108,9 +108,9 @@ export function convertSingleCharToDoubleChar(text: string): string {
   }
 
   export function filter<T>(arr: T[], conditions: { [key: string]: any }): T[] {
-    return arr.filter((item: any) => {
+    return arr.filter((item: T) => {
       for (const [key, value] of Object.entries(conditions)) {
-        if (!item[key] || !item[key].includes(value)) return false
+        if (!item[key as keyof T] || !String(item[key as keyof T]).includes(value)) return false
       }
       return true
     })

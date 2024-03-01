@@ -1,6 +1,5 @@
-// Assuming the existence of these functions and classes. You might need to adjust these based on your actual implementation.
-
 import { LeetcodeData } from '../../types/LeetcodeData'
+import { Stats } from '../../types/Stats'
 import { GitHub } from '../github'
 import {
   getHook,
@@ -38,7 +37,7 @@ async function upload(
 ): Promise<void> {
   try {
     const git: GitHub = new GitHub(hook, token)
-    const stats: any = await getStats()
+    const stats: Stats = await getStats()
 
     const directory = `LeetCode/${leetcodeData.title.replace(/\s+/g, '-')}`
     const filename = 'Solution.ext'

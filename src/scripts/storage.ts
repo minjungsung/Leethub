@@ -2,7 +2,6 @@ import { Stats } from '../types/Stats'
 import { GitHub } from './github'
 import { getVersion, isNull } from './util'
 
-
 chrome.storage.local.get('isSync', (data: { isSync?: boolean }) => {
   const keys = [
     'leethub_token',
@@ -213,7 +212,12 @@ export async function updateLocalStorageStats(): Promise<Stats> {
 
   const git = new GitHub(hook, token)
   const stats = await getStats()
-  const tree_items: any[] = []
+  const tree_items: {
+    path: string
+    sha: string
+    mode: string
+    type: string
+  }[] = []
   await git.getTree().then((tree: any[]) => {
     tree.forEach((item) => {
       if (item.type === 'blob') {

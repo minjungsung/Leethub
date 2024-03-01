@@ -69,6 +69,8 @@ const linkStatusCode = (status: number, name: string): boolean => {
 
 export const linkRepo = (token: string, name: string): void => {
   const AUTHENTICATION_URL = `https://api.github.com/repos/${name}`
+  const hookModeElement = document.getElementById('hook_mode')
+  const commitModeElement = document.getElementById('commit_mode')
 
   const xhr = new XMLHttpRequest()
   xhr.addEventListener('readystatechange', function () {
@@ -90,13 +92,17 @@ export const linkRepo = (token: string, name: string): void => {
         chrome.storage.local.set({ leethub_hook: res.full_name }, () => {
           console.info('Successfully set new repo hook')
         })
-        document.getElementById('hook_mode')!.style.display = 'none'
-        document.getElementById('commit_mode')!.style.display = 'inherit'
+        if (hookModeElement && commitModeElement) {
+          hookModeElement.style.display = 'none'
+          commitModeElement.style.display = 'inherit'
+        }
       } else if (!bool) {
         chrome.storage.local.set({ mode_type: 'hook' }, () => {})
         chrome.storage.local.set({ leethub_hook: null }, () => {})
-        document.getElementById('hook_mode')!.style.display = 'inherit'
-        document.getElementById('commit_mode')!.style.display = 'none'
+        if (hookModeElement && commitModeElement) {
+          hookModeElement.style.display = 'inherit'
+          commitModeElement.style.display = 'none'
+        }
       }
     }
   })
@@ -108,15 +114,19 @@ export const linkRepo = (token: string, name: string): void => {
 }
 
 const unlinkRepo = (): void => {
+  const hookModeElement = document.getElementById('hook_mode')
+  const commitModeElement = document.getElementById('commit_mode')
+  
   chrome.storage.local.set({ mode_type: 'hook' }, () => {
     console.info(`Unlinking repo`)
   })
   chrome.storage.local.set({ leethub_hook: null }, () => {
     console.info('Defaulted repo hook to NONE')
   })
-
-  document.getElementById('hook_mode')!.style.display = 'inherit'
-  document.getElementById('commit_mode')!.style.display = 'none'
+  if (hookModeElement && commitModeElement) {
+    hookModeElement.style.display = 'inherit'
+    commitModeElement.style.display = 'none'
+  }
 }
 
 $('#type').on('change', function () {
@@ -179,6 +189,8 @@ $('#unlink a').on('click', () => {
 
 chrome.storage.local.get('mode_type', (data) => {
   const mode = data.mode_type
+  const hookModeElement = document.getElementById('hook_mode')
+  const commitModeElement = document.getElementById('commit_mode')
 
   if (mode && mode === 'commit') {
     chrome.storage.local.get('leethub_token', (data2) => {
@@ -189,8 +201,10 @@ chrome.storage.local.get('mode_type', (data) => {
         )
         $('#error').show()
         $('#success').hide()
-        document.getElementById('hook_mode')!.style.display = 'inherit'
-        document.getElementById('commit_mode')!.style.display = 'none'
+        if (hookModeElement && commitModeElement) {
+          hookModeElement.style.display = 'inherit'
+          commitModeElement.style.display = 'none'
+        }
       } else {
         chrome.storage.local.get('leethub_hook', (repoName) => {
           const hook = repoName.leethub_hook
@@ -200,15 +214,18 @@ chrome.storage.local.get('mode_type', (data) => {
             )
             $('#error').show()
             $('#success').hide()
-            document.getElementById('hook_mode')!.style.display = 'inherit'
-            document.getElementById('commit_mode')!.style.display = 'none'
+            if (hookModeElement && commitModeElement) {
+              hookModeElement.style.display = 'inherit'
+              commitModeElement.style.display = 'none'
+            }
           } else {
             linkRepo(token, hook)
           }
         })
-
-        document.getElementById('hook_mode')!.style.display = 'none'
-        document.getElementById('commit_mode')!.style.display = 'inherit'
+        if (hookModeElement && commitModeElement) {
+          hookModeElement.style.display = 'none'
+          commitModeElement.style.display = 'inherit'
+        }
       }
     })
   }

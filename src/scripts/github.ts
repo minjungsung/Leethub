@@ -29,7 +29,15 @@ export class GitHub {
     return createBlob(this.hook, this.token, content, path)
   }
 
-  async createTree(refSHA: string, tree_items: any[]): Promise<string> {
+  async createTree(
+    refSHA: string,
+    tree_items: {
+      path: string
+      sha: string
+      mode: string
+      type: string
+    }[]
+  ): Promise<string> {
     return createTree(this.hook, this.token, refSHA, tree_items)
   }
 
@@ -49,7 +57,14 @@ export class GitHub {
     return updateHead(this.hook, this.token, ref, commitSHA, force)
   }
 
-  async getTree(): Promise<any[]> {
+  async getTree(): Promise<
+    {
+      path: string
+      sha: string
+      mode: string
+      type: string
+    }[]
+  > {
     return getTree(this.hook, this.token)
   }
 }
@@ -117,7 +132,12 @@ async function createTree(
   hook: string,
   token: string,
   refSHA: string,
-  tree_items: any[]
+  tree_items: {
+    path: string
+    sha: string
+    mode: string
+    type: string
+  }[]
 ): Promise<string> {
   const response = await fetch(
     `https://api.github.com/repos/${hook}/git/trees`,
@@ -181,7 +201,17 @@ async function updateHead(
   return data.sha
 }
 
-async function getTree(hook: string, token: string): Promise<any[]> {
+async function getTree(
+  hook: string,
+  token: string
+): Promise<
+  {
+    path: string
+    sha: string
+    mode: string
+    type: string
+  }[]
+> {
   const response = await fetch(
     `https://api.github.com/repos/${hook}/git/trees/HEAD?recursive=1`,
     {

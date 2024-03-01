@@ -13,7 +13,7 @@ const Popup: React.FC = () => {
   useEffect(() => {
     browser.storage.local
       .get(['leethub_token', 'mode_type', 'stats', 'leethub_hook'])
-      .then((data: any) => {
+      .then((data: Record<string, any>) => {
         const { leethub_token, mode_type, stats, leethub_hook } = data
         if (!leethub_token) {
           setMode('auth')
