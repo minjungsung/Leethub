@@ -16,7 +16,7 @@ export const createRepo = (token: string, name: string): void => {
     private: true,
     auto_init: true,
     description:
-      'Collection of LeetCode questions to ace the coding interview! - Created using [LeetHub](https://github.com/minjungsung/LeetHub)'
+      'Collection of LeetCode questions to ace the coding interview! - Created using [LeetHub](https://github.com/minjungsung/leethub)'
   })
 
   const xhr = new XMLHttpRequest()

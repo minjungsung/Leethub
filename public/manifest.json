@@ -3,7 +3,7 @@
   "name": "LeetHub",
   "short_name": "LeetHub",
   "description": "Automatically integrate your Leetcode & GeeksforGeeks submissions to GitHub",
-  "homepage_url": "https://github.com/minjungsung/LeetHub",
+  "homepage_url": "https://github.com/minjungsung/leethub",
   "version": "1.0.0",
   "author": "Minjung Sung",
   "action": {
