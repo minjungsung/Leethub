@@ -6,6 +6,10 @@
   "homepage_url": "https://github.com/minjungsung/LeetHub",
   "version": "1.0.0",
   "author": "Minjung Sung",
+  "action": {
+    "default_icon": "assets/thumbnail.png",
+    "default_popup": "index.html"
+  },
   "icons": {
     "16": "assets/thumbnail.png",
     "48": "assets/thumbnail.png",
@@ -43,10 +47,22 @@
       "world": "ISOLATED"
     }
   ],
-  "action": {
-    "default_popup": "index.html"
-  },
-  "permissions": ["storage", "tabs", "activeTab", "scripting"],
+  "permissions": [
+    "unlimitedStorage",
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "https://leetcode.com/*",
+    "https://github.com/*",
+    "https://practice.geeksforgeeks.org/*",
+    "https://www.acmicpc.net/",
+    "https://school.programmers.co.kr/",
+    "https://swexpertacademy.com/",
+    "https://solved.ac/api/v3/*",
+    "https://level.goorm.io/"
+  ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
   },
