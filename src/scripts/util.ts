@@ -1,12 +1,12 @@
+import { map } from "../constants/Map"
+
 export {}
-declare var __DEV__: boolean | undefined
-declare var debug: boolean
 
 export function getVersion(): string {
   return chrome.runtime.getManifest().version
 }
 
-function elementExists(element: Element | null | undefined): boolean {
+export function elementExists(element: Element | null | undefined): boolean {
   if (element instanceof HTMLElement) {
     return element.children.length > 0
   }
@@ -33,7 +33,7 @@ function isNotEmpty(obj: any): boolean {
   return true
 }
 
-function escapeHtml(text: string): string {
+export function escapeHtml(text: string): string {
   const map: { [key: string]: string } = {
     '&': '&amp;',
     '<': '&lt;',
@@ -45,7 +45,7 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (m) => map[m])
 }
 
-function unescapeHtml(text: string): string {
+export function unescapeHtml(text: string): string {
   const unescaped: { [key: string]: string } = {
     '&amp;': '&',
     '&#38;': '&',
@@ -67,43 +67,12 @@ function unescapeHtml(text: string): string {
 }
 
 export function convertSingleCharToDoubleChar(text: string): string {
-  const map = {
-    '!': '！',
-    '%': '％',
-    '&': '＆',
-    '(': '（',
-    ')': '）',
-    '*': '＊',
-    '+': '＋',
-    ',': '，',
-    '-': '－',
-    '.': '．',
-    '/': '／',
-    ':': '：',
-    ';': '；',
-    '<': '＜',
-    '=': '＝',
-    '>': '＞',
-    '?': '？',
-    '@': '＠',
-    '[': '［',
-    '\\': '＼',
-    ']': '］',
-    '^': '＾',
-    _: '＿',
-    '`': '｀',
-    '{': '｛',
-    '|': '｜',
-    '}': '｝',
-    '~': '～',
-    ' ': ' '
-  }
   return text.replace(/[!%&()*+,\-./:;<=>?@\[\\\]^_`{|}~ ]/g, (m) => {
     return map[m as keyof typeof map]
   })}
 
 
-  function parseNumberFromString(str: string): number {
+  export function parseNumberFromString(str: string): number {
     const numbers = str.match(/\d+/g) || ''
     if (isNotEmpty(numbers) && numbers.length > 0) {
       return Number(numbers[0])
@@ -122,7 +91,7 @@ export function convertSingleCharToDoubleChar(text: string): string {
     }, {} as Record<string, T[]>)
   }
 
-  function maxValuesGroupBykey<T, K extends keyof T>(
+  export function maxValuesGroupBykey<T, K extends keyof T>(
     arr: T[],
     key: K,
     compare: (a: T, b: T) => number
@@ -138,7 +107,7 @@ export function convertSingleCharToDoubleChar(text: string): string {
     return result
   }
 
-  function filter<T>(arr: T[], conditions: { [key: string]: any }): T[] {
+  export function filter<T>(arr: T[], conditions: { [key: string]: any }): T[] {
     return arr.filter((item: any) => {
       for (const [key, value] of Object.entries(conditions)) {
         if (!item[key] || !item[key].includes(value)) return false

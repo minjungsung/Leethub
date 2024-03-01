@@ -1,3 +1,6 @@
 export interface Stats {
-  sha?: { [key: string]: string }
+  version?: string
+  branches?: any
+  submission?: any
+  problems?: any
 }

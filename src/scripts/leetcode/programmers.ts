@@ -8,19 +8,19 @@ import {
 } from '../storage'
 import { getVersion, isNull } from '../util'
 import { parseData } from './parsing'
-import { BojData, uploadOneSolveProblemOnGit } from './uploadfunctions'
+import { uploadOneSolveProblemOnGit } from './uploadfunctions'
 import { isNotEmpty, markUploadedCSS, startUpload } from './util'
+import { BojData } from '../../types/BoJData'
+import { checkEnable } from '../enable'
 
 // Set to true to enable console log
 let loader: number | undefined
-const currentUrl: string = window.location.href
 
 startLoader()
 
 function startLoader(): void {
   loader = window.setInterval(async () => {
-    // const enable: boolean = await checkEnable()
-    const enable: boolean = true
+    const enable: boolean = await checkEnable()
     if (!enable) stopLoader()
     else if (getSolvedResult()) {
       stopLoader()

@@ -1,18 +1,10 @@
 // Assuming the existence of these functions and classes. You might need to adjust these based on your actual implementation.
 
+import { BojData } from "../../types/BoJData"
 import { GitHub } from "../github"
 import { getHook, getStats, getToken, saveStats, updateObjectDatafromPath } from "../storage"
 import { isNull } from "../util"
 
-export interface BojData {
-  code: string;
-  readme: string;
-  directory: string;
-  fileName: string;
-  message: string;
-}
-
-// Callback type definition
 type CallbackFunction = (branches: any, directory: string) => void;
 
 export async function uploadOneSolveProblemOnGit(bojData: BojData, cb: CallbackFunction): Promise<void> {

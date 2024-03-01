@@ -1,9 +1,6 @@
 const { override } = require('customize-cra')
-const fs = require('fs')
-const path = require('path')
 
 const overrideEntry = (config) => {
-
   config.entry = {
     main: './src/popup',
     authorize: './src/scripts/authorize',
@@ -14,16 +11,12 @@ const overrideEntry = (config) => {
     oauth2: './src/scripts/oauth2',
     toast: './src/scripts/toast',
     util: './src/scripts/util',
-    leetcode: './src/scripts/leetcode',
     'leetcode/parsing': './src/scripts/leetcode/parsing',
     'leetcode/programmers': './src/scripts/leetcode/programmers',
     'leetcode/uploadfunctions': './src/scripts/leetcode/uploadfunctions',
     'leetcode/util': './src/scripts/leetcode/util',
     'leetcode/variables': './src/scripts/leetcode/variables'
   }
-
-
-
   return config
 }
 
@@ -37,6 +30,8 @@ const overrideOutput = (config) => {
   return config
 }
 
+
 module.exports = {
-  webpack: (config) => override(overrideEntry, overrideOutput)(config)
+  webpack: (config) =>
+    override(overrideEntry, overrideOutput)(config)
 }

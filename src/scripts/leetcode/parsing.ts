@@ -1,37 +1,6 @@
-import { BojData } from "./uploadfunctions"
+import { map } from "../../constants/Map"
+import { BojData } from "../../types/BoJData"
 import { getDateString } from "./util"
-
-// Define interfaces for structured data
-interface Data {
-  link?: string
-  problemId: string
-  level: string
-  title: string
-  problem_description: string
-  division: string
-  language_extension: string
-  code: string
-  result_message: string
-  runtime: string
-  memory: string
-  language: string
-}
-
-interface MakeDataParams {
-  problem_description: string
-  problemId: string
-  level: string
-  result_message: string
-  division: string
-  language_extension: string
-  title: string
-  runtime: string
-  memory: string
-  code: string
-  language: string
-}
-
-// Assuming getDirNameByOrgOption and getDateString are defined elsewhere
 
 export async function parseData(): Promise<BojData> {
   // const linkElement = document.querySelector(
@@ -206,39 +175,7 @@ async function makeData(origin: any): Promise<BojData> {
   return { directory, message, fileName, readme, code }
 }
 
-export function convertSingleCharToDoubleChar(text: string): string {
-  // singleChar to doubleChar mapping
-  const map = {
-    '!': '！',
-    '%': '％',
-    '&': '＆',
-    '(': '（',
-    ')': '）',
-    '*': '＊',
-    '+': '＋',
-    ',': '，',
-    '-': '－',
-    '.': '．',
-    '/': '／',
-    ':': '：',
-    ';': '；',
-    '<': '＜',
-    '=': '＝',
-    '>': '＞',
-    '?': '？',
-    '@': '＠',
-    '[': '［',
-    '\\': '＼',
-    ']': '］',
-    '^': '＾',
-    _: '＿',
-    '`': '｀',
-    '{': '｛',
-    '|': '｜',
-    '}': '｝',
-    '~': '～',
-    ' ': ' ' // 공백만 전각문자가 아닌 FOUR-PER-EM SPACE로 변환
-  }
+export function convertSingleCharToDoubleChar(text: string): string { 
   return text.replace(/[!%&()*+,\-./:;<=>?@\[\\\]^_`{|}~ ]/g, function (m) {
     return map[m as keyof typeof map]
   })

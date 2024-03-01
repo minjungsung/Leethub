@@ -1,9 +1,5 @@
 import { uploadState } from './variables'
 
-interface UploadState {
-  uploading: boolean
-  countdown?: number
-}
 export function startUpload(): void {
   let elem = document.getElementById('BaekjoonHub_progress_anchor_element')
   if (!elem) {
@@ -24,11 +20,7 @@ export function startUpload(): void {
   startUploadCountDown()
 }
 
-interface Branches {
-  [key: string]: string
-}
-
-export function markUploadedCSS(branches: Branches, directory: string): void {
+export function markUploadedCSS(branches: { [key: string]: string }, directory: string): void {
   uploadState.uploading = false
   const elem = document.getElementById('BaekjoonHub_progress_elem')
   if (!elem) return

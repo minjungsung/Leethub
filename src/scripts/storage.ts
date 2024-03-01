@@ -1,12 +1,7 @@
+import { Stats } from '../types/Stats'
 import { GitHub } from './github'
 import { getVersion, isNull } from './util'
 
-interface Stats {
-  version?: string
-  branches?: any
-  submission?: any
-  problems?: any
-}
 
 chrome.storage.local.get('isSync', (data: { isSync?: boolean }) => {
   const keys = [

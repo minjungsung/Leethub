@@ -1,15 +1,6 @@
 // Define the request and sender types for better type checking
-export {}
-interface Request {
-  closeWebPage?: boolean
-  isSuccess?: boolean
-  username?: string
-  token?: string
-  sender?: string
-  task?: string
-  problemId?: number
-}
-
+import { WELCOME_URL } from '../constants/Url'
+import { Request } from '../types/Request'
 interface Sender {
   // Define any properties used from the sender object here
 }
@@ -51,8 +42,7 @@ function handleMessage(
     })
 
     /* Go to onboarding for UX */
-    const urlOnboarding = `chrome-extension://${chrome.runtime.id}/index.html#/welcome`
-    chrome.tabs.create({ url: urlOnboarding, selected: true }) // creates new tab
+    chrome.tabs.create({ url: WELCOME_URL, selected: true }) // creates new tab
   } else if (
     request &&
     request.closeWebPage === true &&
@@ -69,7 +59,8 @@ function handleMessage(
   ) {
     SolvedApiCall(request.problemId ?? 0).then((res) => sendResponse(res))
   }
-  return true // Indicates you wish to send a response asynchronously
+  return true
 }
 
 chrome.runtime.onMessage.addListener(handleMessage)
+export {}

@@ -1,46 +1,68 @@
-# Getting Started with Create React App
+# Leethub
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+LeetCode Companion is a tool designed to enhance your coding practice and interview preparation experience on LeetCode. It seamlessly integrates with your development environment, offering features like automatic submission tracking, personalized statistics, and more. This project aims to make your LeetCode journey more productive and insightful.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Automatic Submission Tracking**: Automatically tracks your problem submissions to LeetCode, including status (Accepted, Wrong Answer, etc.), runtime, and memory usage.
+- **Personalized Statistics**: Provides detailed statistics on your progress, including total problems solved, acceptance rate, and performance in various problem categories.
+- **Problem Recommendations**: Offers personalized problem recommendations based on your past submissions and areas that need improvement.
+- **Offline Access**: Allows you to save problems for offline access, enabling you to practice anytime, anywhere without internet connectivity.
 
-### `npm start`
+## Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+This project is built using Create React App for a smooth and straightforward setup.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Prerequisites
 
-### `npm test`
+- Node.js (LTS version recommended)
+- npm (comes with Node.js)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Installation
 
-### `npm run build`
+1. Clone the repository:
+``` git clone https://github.com/minjungsung/leethub.git ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. Navigate to the project directory:
+``` cd leethub ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. Install dependencies:
+``` npm install ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. Start the development server:
+``` npm start ```
 
-### `npm run eject`
+   This runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Building for Production
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+To build the app for production, run:
+``` npm run build ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+This command builds the app to the `build` folder, optimizing the build for the best performance. Your app is ready to be deployed!
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Deployment
+
+Refer to the [Create React App deployment documentation](https://facebook.github.io/create-react-app/docs/deployment) for detailed instructions on deploying to popular platforms like GitHub Pages, Netlify, and Vercel.
+
+## Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+To learn more about React, check out the [React documentation](https://reactjs.org/).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
+
+Happy Coding! 🚀

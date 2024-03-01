@@ -3,16 +3,14 @@ import '../css/popup.css'
 import React, { useState, useEffect } from 'react'
 import browser from 'webextension-polyfill'
 import { oAuth2 } from '../scripts/oauth2'
+import { WELCOME_URL } from '../constants/Url'
 
 const Popup: React.FC = () => {
   const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('auth')
-  const [leethubHook, setLeethubHook] = useState<string>(
-    `chrome-extension://${chrome.runtime.id}/index.html#/welcome`
-  )
+  const [leethubHook, setLeethubHook] = useState<string>(WELCOME_URL)
   const [stats, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
 
   useEffect(() => {
-    // Simulate fetching data from storage and setting the mode accordingly
     browser.storage.local
       .get(['leethub_token', 'mode_type', 'stats', 'leethub_hook'])
       .then((data: any) => {

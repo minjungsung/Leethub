@@ -1,18 +1,5 @@
-import { LocalAuth } from "../constants/LocalAuth"
-
-interface LocalAuth {
-  KEY: string
-  ACCESS_TOKEN_URL: string
-  AUTHORIZATION_URL: string
-  CLIENT_ID: string
-  CLIENT_SECRET: string
-  REDIRECT_URL: string
-  SCOPES: string[]
-  init: () => void
-  parseAccessCode: (url: string) => void
-  requestToken: (code: string) => void
-  finish: (token: string) => void
-}
+import { LocalAuth as LocalAuthConstants } from "../constants/LocalAuth"
+import { LocalAuth } from "../types/LocalAuth"
 
 const localAuth: LocalAuth = {
   KEY: '',
@@ -27,13 +14,13 @@ const localAuth: LocalAuth = {
    * Initialize
    */
   init() {
-    this.KEY = LocalAuth.KEY
-    this.ACCESS_TOKEN_URL = LocalAuth.ACCESS_TOKEN_URL
-    this.AUTHORIZATION_URL = LocalAuth.AUTHORIZATION_URL
-    this.CLIENT_ID = LocalAuth.CLIENT_ID
-    this.CLIENT_SECRET = LocalAuth.CLIENT_SECRET
-    this.REDIRECT_URL = LocalAuth.REDIRECT_URL
-    this.SCOPES = LocalAuth.SCOPES
+    this.KEY = LocalAuthConstants.KEY
+    this.ACCESS_TOKEN_URL = LocalAuthConstants.ACCESS_TOKEN_URL
+    this.AUTHORIZATION_URL = LocalAuthConstants.AUTHORIZATION_URL
+    this.CLIENT_ID = LocalAuthConstants.CLIENT_ID
+    this.CLIENT_SECRET = LocalAuthConstants.CLIENT_SECRET
+    this.REDIRECT_URL = LocalAuthConstants.REDIRECT_URL
+    this.SCOPES = LocalAuthConstants.SCOPES
   },
 
   /**

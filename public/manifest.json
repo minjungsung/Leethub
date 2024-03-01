@@ -1,12 +1,16 @@
 {
   "manifest_version": 3,
   "name": "LeetHub",
-  "short_name": "React App",
+  "short_name": "LeetHub",
   "description": "Automatically integrate your Leetcode & GeeksforGeeks submissions to GitHub",
-  "version": "1.1.2",
-  "author": "Minjung Sung",
   "homepage_url": "https://github.com/minjungsung/LeetHub",
-  "icons": {},
+  "version": "1.0.0",
+  "author": "Minjung Sung",
+  "icons": {
+    "16": "assets/thumbnail.png",
+    "48": "assets/thumbnail.png",
+    "128": "assets/thumbnail.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -23,7 +27,6 @@
         "storage.js",
         "enable.js",
         "oauth2.js",
-        "leetcode.js",
         "leetcode/variables.js",
         "leetcode/util.js",
         "leetcode/parsing.js",
