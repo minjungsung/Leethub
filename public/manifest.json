@@ -49,9 +49,7 @@
   ],
   "permissions": [
     "unlimitedStorage",
-    "storage",
-    "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "storage"
   ],
   "host_permissions": [
     "https://leetcode.com/*",
