@@ -16,40 +16,32 @@
     "128": "assets/thumbnail.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
-
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "css": [],
+      "matches": [
+        "https://leetcode.com/*"
+      ],
       "js": [
-        "toast.js",
+        "storage.js",
         "util.js",
         "github.js",
-        "authorize.js",
-        "storage.js",
-        "enable.js",
-        "oauth2.js",
+        "toast.js",
         "leetcode/variables.js",
         "leetcode/util.js",
         "leetcode/parsing.js",
         "leetcode/programmers.js",
         "leetcode/uploadfunctions.js"
       ],
-      "exclude_matches": [],
-      "include_globs": [],
-      "exclude_globs": [],
-      "all_frames": false,
-      "match_origin_as_fallback": false,
-      "match_about_blank": false,
-      "run_at": "document_idle",
-      "world": "ISOLATED"
+      "run_at": "document_end"
     }
   ],
   "permissions": [
     "unlimitedStorage",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://leetcode.com/*",
@@ -66,8 +58,13 @@
   },
   "web_accessible_resources": [
     {
-      "resources": [],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "*.js",
+        "*.js.map"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

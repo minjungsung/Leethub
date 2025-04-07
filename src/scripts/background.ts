@@ -17,6 +17,7 @@ function handleMessage(
   sender: Sender,
   sendResponse: SendResponse
 ): boolean {
+
   if (request && request.closeWebPage === true && request.isSuccess === true) {
     chrome.storage.local.set({ leethub_username: request.username })
     chrome.storage.local.set({ leethub_token: request.token })
@@ -30,6 +31,7 @@ function handleMessage(
     request.closeWebPage === true &&
     request.isSuccess === false
   ) {
+    console.error('Authentication failed');
     alert('Something went wrong while trying to authenticate your profile!')
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id) chrome.tabs.remove(tabs[0].id)
@@ -45,4 +47,4 @@ function handleMessage(
 }
 
 chrome.runtime.onMessage.addListener(handleMessage)
-export {}
+export { }

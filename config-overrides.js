@@ -3,19 +3,19 @@ const { override } = require('customize-cra')
 const overrideEntry = (config) => {
   config.entry = {
     main: './src/popup',
-    authorize: './src/scripts/authorize',
-    background: './src/scripts/background',
-    enable: './src/scripts/enable',
-    github: './src/scripts/github',
-    storage: './src/scripts/storage',
-    oauth2: './src/scripts/oauth2',
-    toast: './src/scripts/toast',
-    util: './src/scripts/util',
-    'leetcode/parsing': './src/scripts/leetcode/parsing',
-    'leetcode/programmers': './src/scripts/leetcode/programmers',
-    'leetcode/uploadfunctions': './src/scripts/leetcode/uploadfunctions',
-    'leetcode/util': './src/scripts/leetcode/util',
-    'leetcode/variables': './src/scripts/leetcode/variables'
+    background: './src/scripts/background.ts',
+    authorize: './src/scripts/authorize.ts',
+    enable: './src/scripts/enable.ts',
+    github: './src/scripts/github.ts',
+    storage: './src/scripts/storage.ts',
+    oauth2: './src/scripts/oauth2.ts',
+    toast: './src/scripts/toast.ts',
+    util: './src/scripts/util.ts',
+    'leetcode/parsing': './src/scripts/leetcode/parsing.ts',
+    'leetcode/programmers': './src/scripts/leetcode/programmers.ts',
+    'leetcode/uploadfunctions': './src/scripts/leetcode/uploadfunctions.ts',
+    'leetcode/util': './src/scripts/leetcode/util.ts',
+    'leetcode/variables': './src/scripts/leetcode/variables.ts'
   }
   return config
 }
@@ -23,15 +23,14 @@ const overrideEntry = (config) => {
 const overrideOutput = (config) => {
   config.output = {
     ...config.output,
-    filename: '[name].js',
-    chunkFilename: '[name].js'
+    filename: (pathData) => {
+      return pathData.chunk.name === 'main' ? 'static/js/[name].[contenthash:8].js' : '[name].js';
+    },
+    chunkFilename: 'static/js/[name].[contenthash:8].chunk.js'
   }
-
   return config
 }
 
-
 module.exports = {
-  webpack: (config) =>
-    override(overrideEntry, overrideOutput)(config)
+  webpack: override(overrideEntry, overrideOutput)
 }

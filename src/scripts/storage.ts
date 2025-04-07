@@ -43,6 +43,7 @@ async function getObjectFromLocalStorage(key: string): Promise<any> {
         resolve(value[key])
       })
     } catch (ex) {
+      console.error('Error getting from storage:', ex);
       reject(ex)
     }
   })
@@ -55,6 +56,7 @@ async function saveObjectInLocalStorage(obj: object): Promise<void> {
         resolve()
       })
     } catch (ex) {
+      console.error('Error saving to storage:', ex);
       reject(ex)
     }
   })
@@ -218,14 +220,24 @@ export async function updateLocalStorageStats(): Promise<Stats> {
     mode: string
     type: string
   }[] = []
-  await git.getTree().then((tree: any[]) => {
-    tree.forEach((item) => {
-      if (item.type === 'blob') {
-        tree_items.push(item)
-      }
-    })
-  })
-  if (stats) {
+
+  try {
+    const tree = await git.getTree()
+
+    if (tree && Array.isArray(tree)) {
+      tree.forEach((item) => {
+        if (item.type === 'blob') {
+          tree_items.push(item)
+        }
+      })
+    } else {
+      console.warn('Tree is not an array or is undefined:', tree);
+    }
+
+    if (!stats) {
+      throw new Error('Stats not found')
+    }
+
     tree_items.forEach((item) => {
       updateObjectDatafromPath(
         stats.submission,
@@ -233,12 +245,15 @@ export async function updateLocalStorageStats(): Promise<Stats> {
         item.sha
       )
     })
+
     const default_branch = await git.getDefaultBranchOnRepo()
-    stats.branches[hook!] = default_branch
+    stats.branches[hook] = default_branch
     await saveStats(stats)
-  } else {
-    throw new Error('Stats is null')
+  } catch (error) {
+    console.error('Error in updateLocalStorageStats:', error);
+    throw error;
   }
+
   return stats
 }
 
