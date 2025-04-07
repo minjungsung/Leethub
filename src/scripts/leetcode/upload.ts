@@ -39,6 +39,14 @@ async function upload(
     const git: GitHub = new GitHub(hook, token)
     const stats: Stats = await getStats()
 
+    // Extract difficulty from the page if not provided
+    if (!leetcodeData.difficulty) {
+      const difficultyElement = document.querySelector('.text-difficulty-medium, .text-difficulty-easy, .text-difficulty-hard')
+      if (difficultyElement instanceof HTMLElement) {
+        leetcodeData.difficulty = getDifficultyFromElement(difficultyElement)
+      }
+    }
+
     const directory = `LeetCode/${leetcodeData.title.replace(/\s+/g, '-')}`
     const languageExtension = getLanguageExtension(leetcodeData.language)
     const filename = `Solution.${languageExtension}`
@@ -117,4 +125,12 @@ function getLanguageExtension(language: string): string {
     'bash': 'sh'
   }
   return extensionMap[language.toLowerCase()] || 'txt'
+}
+
+function getDifficultyFromElement(element: HTMLElement): 'Easy' | 'Medium' | 'Hard' | undefined {
+  const text = element.textContent?.trim()
+  if (text === 'Easy' || text === 'Medium' || text === 'Hard') {
+    return text
+  }
+  return undefined
 }

@@ -73,10 +73,6 @@ const Popup: React.FC = () => {
               </a>
             </p>
             <p>Problems Solved: {Object.keys(stats?.problems ?? {}).length}</p>
-            <p>Easy: {Object.values(stats?.problems ?? {}).filter(p => p.difficulty === 'Easy').length}</p>
-            <p>Medium: {Object.values(stats?.problems ?? {}).filter(p => p.difficulty === 'Medium').length}</p>
-            <p>Hard: {Object.values(stats?.problems ?? {}).filter(p => p.difficulty === 'Hard').length}</p>
-            {/* Display more stats as needed */}
           </div>
         )}
       </div>
