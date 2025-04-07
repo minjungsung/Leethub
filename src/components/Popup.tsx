@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react'
 import browser from 'webextension-polyfill'
 import { oAuth2 } from '../scripts/oauth2'
 import { WELCOME_URL } from '../constants/Url'
-
+import { Stats } from '../types/Stats'
 const Popup: React.FC = () => {
   const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('auth')
   const [leethubHook, setLeethubHook] = useState<string>(WELCOME_URL)
-  const [stats, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
+  const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
     browser.storage.local
@@ -72,7 +72,10 @@ const Popup: React.FC = () => {
                 {leethubHook}
               </a>
             </p>
-            <p>Problems Solved: {stats.solved}</p>
+            <p>Problems Solved: {Object.keys(stats?.problems ?? {}).length}</p>
+            <p>Easy: {Object.values(stats?.problems ?? {}).filter(p => p.difficulty === 'Easy').length}</p>
+            <p>Medium: {Object.values(stats?.problems ?? {}).filter(p => p.difficulty === 'Medium').length}</p>
+            <p>Hard: {Object.values(stats?.problems ?? {}).filter(p => p.difficulty === 'Hard').length}</p>
             {/* Display more stats as needed */}
           </div>
         )}

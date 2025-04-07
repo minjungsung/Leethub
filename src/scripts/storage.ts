@@ -223,16 +223,23 @@ export async function updateLocalStorageStats(): Promise<Stats> {
 
   try {
     const tree = await git.getTree()
+    console.log('GitHub tree response:', tree)
 
-    if (tree && Array.isArray(tree)) {
-      tree.forEach((item) => {
-        if (item.type === 'blob') {
-          tree_items.push(item)
-        }
-      })
-    } else {
-      console.warn('Tree is not an array or is undefined:', tree);
+    if (!tree) {
+      console.warn('Tree is null or undefined')
+      return stats
     }
+
+    if (!Array.isArray(tree)) {
+      console.warn('Tree is not an array:', typeof tree, tree)
+      return stats
+    }
+
+    tree.forEach((item) => {
+      if (item.type === 'blob') {
+        tree_items.push(item)
+      }
+    })
 
     if (!stats) {
       throw new Error('Stats not found')
@@ -250,8 +257,8 @@ export async function updateLocalStorageStats(): Promise<Stats> {
     stats.branches[hook] = default_branch
     await saveStats(stats)
   } catch (error) {
-    console.error('Error in updateLocalStorageStats:', error);
-    throw error;
+    console.error('Error in updateLocalStorageStats:', error)
+    throw error
   }
 
   return stats

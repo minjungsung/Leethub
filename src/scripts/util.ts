@@ -1,6 +1,6 @@
 import { map } from "../constants/Map"
 
-export {}
+export { }
 
 export function getVersion(): string {
   return chrome.runtime.getManifest().version
@@ -69,49 +69,54 @@ export function unescapeHtml(text: string): string {
 export function convertSingleCharToDoubleChar(text: string): string {
   return text.replace(/[!%&()*+,\-./:;<=>?@\[\\\]^_`{|}~ ]/g, (m) => {
     return map[m as keyof typeof map]
-  })}
+  })
+}
 
 
-  export function parseNumberFromString(str: string): number {
-    const numbers = str.match(/\d+/g) || ''
-    if (isNotEmpty(numbers) && numbers.length > 0) {
-      return Number(numbers[0])
+export function parseNumberFromString(str: string): number {
+  const numbers = str.match(/\d+/g) || ''
+  if (isNotEmpty(numbers) && numbers.length > 0) {
+    return Number(numbers[0])
+  }
+  return NaN
+}
+
+function groupBy<T, K extends keyof T>(
+  array: T[],
+  key: K
+): Record<string, T[]> {
+  return array.reduce((rv: Record<string, T[]>, x: T) => {
+    const keyValue = String(x[key])
+      ; (rv[keyValue] = rv[keyValue] || []).push(x)
+    return rv
+  }, {} as Record<string, T[]>)
+}
+
+export function maxValuesGroupBykey<T, K extends keyof T>(
+  arr: T[],
+  key: K,
+  compare: (a: T, b: T) => number
+): T[] {
+  const map = groupBy(arr, key)
+  const result: T[] = []
+  for (const group of Object.values(map)) {
+    const maxValue = group.reduce((max, current) =>
+      compare(max, current) > 0 ? max : current
+    )
+    result.push(maxValue)
+  }
+  return result
+}
+
+export function filter<T>(arr: T[], conditions: { [key: string]: any }): T[] {
+  if (!Array.isArray(arr)) {
+    console.warn('filter called with non-array input:', arr)
+    return []
+  }
+  return arr.filter((item: T) => {
+    for (const [key, value] of Object.entries(conditions)) {
+      if (!item[key as keyof T] || !String(item[key as keyof T]).includes(value)) return false
     }
-    return NaN
-  }
-
-  function groupBy<T, K extends keyof T>(
-    array: T[],
-    key: K
-  ): Record<string, T[]> {
-    return array.reduce((rv: Record<string, T[]>, x: T) => {
-      const keyValue = String(x[key])
-      ;(rv[keyValue] = rv[keyValue] || []).push(x)
-      return rv
-    }, {} as Record<string, T[]>)
-  }
-
-  export function maxValuesGroupBykey<T, K extends keyof T>(
-    arr: T[],
-    key: K,
-    compare: (a: T, b: T) => number
-  ): T[] {
-    const map = groupBy(arr, key)
-    const result: T[] = []
-    for (const group of Object.values(map)) {
-      const maxValue = group.reduce((max, current) =>
-        compare(max, current) > 0 ? max : current
-      )
-      result.push(maxValue)
-    }
-    return result
-  }
-
-  export function filter<T>(arr: T[], conditions: { [key: string]: any }): T[] {
-    return arr.filter((item: T) => {
-      for (const [key, value] of Object.entries(conditions)) {
-        if (!item[key as keyof T] || !String(item[key as keyof T]).includes(value)) return false
-      }
-      return true
-    })
-  }
+    return true
+  })
+}
