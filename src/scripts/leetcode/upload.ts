@@ -73,6 +73,18 @@ async function upload(
       `${hook}/${readme.path}`,
       readme.sha
     )
+
+    // Update problems count
+    if (!stats.problems) {
+      stats.problems = {}
+    }
+    stats.problems[leetcodeData.title] = {
+      id: Date.now(),
+      title: leetcodeData.title,
+      difficulty: leetcodeData.difficulty || 'Unknown',
+      tags: leetcodeData.tags || []
+    }
+    console.log('Updating stats with new problem:', stats)
     await saveStats(stats)
 
     // Execute callback function

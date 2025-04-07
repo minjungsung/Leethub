@@ -20,7 +20,7 @@ async function uploadToGit(
     tags?: string[]
 ) {
     try {
-        const stats = await getStats()
+        let stats = await getStats()
         const hook = await getHook()
 
         if (!hook) {
@@ -50,20 +50,32 @@ async function uploadToGit(
         }
 
         // Update stats with new problem
-        if (stats) {
-            if (!stats.problems) {
-                stats.problems = {}
+        if (!stats) {
+            console.log('No stats found, creating new stats object')
+            stats = {
+                version: '1.0.0',
+                branches: {},
+                submission: {},
+                problems: {}
             }
-            stats.problems[title] = {
-                id: Date.now(),
-                title,
-                difficulty: difficulty || 'Unknown',
-                tags: tags || []
-            }
-            await saveStats(stats)
         }
 
-        console.log('Upload successful')
+        console.log('Current stats before update:', stats)
+        if (!stats.problems) {
+            stats.problems = {}
+        }
+        stats.problems[title] = {
+            id: Date.now(),
+            title,
+            difficulty: difficulty || 'Unknown',
+            tags: tags || []
+        }
+        await saveStats(stats)
+        console.log('Updated stats:', stats)
+
+        // Verify update
+        const updatedStats = await getStats()
+        console.log('Verified stats from storage:', updatedStats)
     } catch (error) {
         console.error('Error uploading to Git:', error)
         throw error

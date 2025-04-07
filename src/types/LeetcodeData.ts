@@ -5,4 +5,6 @@ export interface LeetcodeData {
   codeSnippet: string // Assuming there's a way to identify the code snippet
   language: string // Assuming there's a way to identify the language
   link: string
+  difficulty?: string
+  tags?: string[]
 }
