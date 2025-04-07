@@ -13,7 +13,7 @@ const overrideEntry = (config) => {
     util: './src/scripts/util.ts',
     'leetcode/parsing': './src/scripts/leetcode/parsing.ts',
     'leetcode/programmers': './src/scripts/leetcode/programmers.ts',
-    'leetcode/uploadfunctions': './src/scripts/leetcode/uploadfunctions.ts',
+    'leetcode/upload': './src/scripts/leetcode/upload.ts',
     'leetcode/util': './src/scripts/leetcode/util.ts',
     'leetcode/variables': './src/scripts/leetcode/variables.ts'
   }

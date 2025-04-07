@@ -33,7 +33,7 @@
         "leetcode/util.js",
         "leetcode/parsing.js",
         "leetcode/programmers.js",
-        "leetcode/uploadfunctions.js"
+        "leetcode/upload.js"
       ],
       "run_at": "document_end"
     },

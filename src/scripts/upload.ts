@@ -49,6 +49,20 @@ async function uploadToGit(
             throw new Error(`Failed to upload: ${response.statusText}`)
         }
 
+        // Update stats with new problem
+        if (stats) {
+            if (!stats.problems) {
+                stats.problems = {}
+            }
+            stats.problems[title] = {
+                id: Date.now(),
+                title,
+                difficulty: difficulty || 'Unknown',
+                tags: tags || []
+            }
+            await saveStats(stats)
+        }
+
         console.log('Upload successful')
     } catch (error) {
         console.error('Error uploading to Git:', error)

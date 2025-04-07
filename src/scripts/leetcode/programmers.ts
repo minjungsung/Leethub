@@ -8,7 +8,7 @@ import {
 } from '../storage'
 import { getVersion, isNull } from '../util'
 import { parseData } from './parsing'
-import { uploadOneSolveProblemOnGit } from './uploadfunctions'
+import { uploadOneSolveProblemOnGit } from './upload'
 import { isNotEmpty, markUploadedCSS, startUpload } from './util'
 import { LeetcodeData } from '../../types/LeetcodeData'
 import { checkEnable } from '../enable'
