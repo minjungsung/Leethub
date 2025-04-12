@@ -19,46 +19,41 @@ startLoader()
 
 function startLoader(): void {
   loader = window.setInterval(async () => {
-    // const enable: boolean = await checkEnable()
-    const enable: boolean = true
-    if (!enable) stopLoader()
-    else if (getSolvedResult()) {
-      stopLoader()
+    // Check for success message in different locations
+    const result = document.querySelector('.text-success') ||
+      document.querySelector('[data-e2e-locator="submission-result"]') ||
+      document.querySelector('.success__3Ai7') ||
+      document.querySelector('.success__1x4n')
+
+    if (result?.textContent?.includes('Accepted') || result?.textContent?.includes('Success')) {
       try {
         const leetcodeData = await parseData()
-        await beginUpload(leetcodeData)
+        if (isNotEmpty(leetcodeData)) {
+          startUpload()
+          await beginUpload(leetcodeData)
+        }
       } catch (error) {
-        console.error(error)
+        console.error('Error during upload:', error)
       }
     }
-  }, 2000)
+  }, 1000) // Check every second
 }
 
-function stopLoader(): void {
+// Only stop loader when the page is unloaded
+window.addEventListener('beforeunload', () => {
   if (loader !== undefined) {
     clearInterval(loader)
+    loader = undefined
   }
-}
-
-function getSolvedResult(): boolean {
-  const result: HTMLElement | null = document.querySelector(
-    '[data-e2e-locator="submission-result"]'
-  )
-  return result?.innerText === 'Accepted'
-}
+})
 
 async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
-  if (isNotEmpty(leetcodeData)) {
-    startUpload()
-
-    const stats = await getStats()
+  try {
     const hook: string = await getHook()
+    const stats = await getStats()
     const currentVersion: string = stats.version as string
-    if (
-      isNull(currentVersion) ||
-      currentVersion !== getVersion() ||
-      isNull(await getStatsSHAfromPath(hook))
-    ) {
+
+    if (isNull(currentVersion) || currentVersion !== getVersion() || isNull(await getStatsSHAfromPath(hook))) {
       await versionUpdate()
     }
 
@@ -66,11 +61,15 @@ async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
       `${hook}/${leetcodeData.title}.${leetcodeData.language}`
     )
     let calcSHA: string = calculateBlobSHA(leetcodeData.codeSnippet)
+
     if (cachedSHA === calcSHA) {
       markUploadedCSS(stats.branches, leetcodeData.link)
       return
     }
+
     await uploadOneSolveProblemOnGit(leetcodeData, markUploadedCSS)
+  } catch (error) {
+    console.error('Error in beginUpload:', error)
   }
 }
 
