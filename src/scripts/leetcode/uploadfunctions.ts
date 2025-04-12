@@ -40,7 +40,8 @@ async function upload(
     const stats: Stats = await getStats()
 
     const directory = `LeetCode/${leetcodeData.title.replace(/\s+/g, '-')}`
-    const filename = 'Solution.ext'
+    console.log('leetcodeData', JSON.stringify(leetcodeData, null, 2))
+    const filename = `Solution.${getLanguageExtension(leetcodeData.language)}`
     const sourceText = leetcodeData.codeSnippet
     const readmeText = `# ${leetcodeData.title}\n\n${leetcodeData.description}`
     const commitMessage = `Add solution for ${leetcodeData.title}`
@@ -81,4 +82,32 @@ async function upload(
   } catch (error) {
     console.error('Failed to execute upload function', error)
   }
+}
+
+function getLanguageExtension(language: string): string {
+  const extensionMap: { [key: string]: string } = {
+    'python': 'py',
+    'python3': 'py',
+    'java': 'java',
+    'cpp': 'cpp',
+    'c': 'c',
+    'csharp': 'cs',
+    'javascript': 'js',
+    'typescript': 'ts',
+    'ruby': 'rb',
+    'swift': 'swift',
+    'go': 'go',
+    'scala': 'scala',
+    'kotlin': 'kt',
+    'rust': 'rs',
+    'php': 'php',
+    'r': 'r',
+    'erlang': 'erl',
+    'elixir': 'ex',
+    'dart': 'dart',
+    'mysql': 'sql',
+    'mssql': 'sql',
+    'oraclesql': 'sql'
+  }
+  return extensionMap[language.toLowerCase()] || 'txt'
 }
