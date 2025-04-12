@@ -15,7 +15,7 @@ const Welcome: React.FC = () => {
     if (!token) {
       // Not authorized yet.
       document.getElementById('error')!.textContent =
-        'Authorization error - Grant BaekjoonHub access to your GitHub account to continue (launch extension to proceed)'
+        'Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
       document.getElementById('error')!.style.display = 'block'
       document.getElementById('success')!.style.display = 'none'
     } else if (repOption === 'new') {
