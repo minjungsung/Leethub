@@ -254,3 +254,14 @@ export async function getBranchName(): Promise<string> {
   const { branch } = await chrome.storage.local.get('branch');
   return branch || 'main';
 }
+
+// Function to get the 'bjhEnable' status
+export async function getIsEnabled(): Promise<boolean> {
+  const enabled = await getObjectFromLocalStorage('bjhEnable');
+  return enabled ?? false; // Default to false if not set
+}
+
+// Function to save the 'bjhEnable' status
+export async function saveIsEnabled(isEnabled: boolean): Promise<void> {
+  await saveObjectInLocalStorage({ bjhEnable: isEnabled });
+}
