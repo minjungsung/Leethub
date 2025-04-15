@@ -4,21 +4,22 @@ import {
   getStats,
   getStatsSHAfromPath,
   saveStats,
-  updateLocalStorageStats
+  updateLocalStorageStats,
+  getIsEnabled
 } from '../storage'
 import { getVersion, isNull } from '../util'
 import { parseData } from './parsing'
 import { uploadOneSolveProblemOnGit } from './uploadfunctions'
 import { isNotEmpty, markUploadedCSS, startUpload } from './util'
 import { LeetcodeData } from '../../types/LeetcodeData'
-import { checkEnable } from '../enable'
 
-let loader: number | undefined
+let uploadObserver: MutationObserver | null = null
 let isUploading: boolean = false; // Flag to prevent concurrent uploads
 
 // Check if extension context is valid
 function isExtensionContextValid(): boolean {
-  return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id !== undefined;
+  // Ensure chrome and runtime are defined before accessing id
+  return typeof chrome !== 'undefined' && chrome.runtime && typeof chrome.runtime.id !== 'undefined';
 }
 
 // Wait for extension context to be valid
@@ -28,6 +29,7 @@ async function waitForValidContext(): Promise<void> {
       if (isExtensionContextValid()) {
         resolve();
       } else {
+        // Add a small delay to prevent tight loop if context is initially invalid
         setTimeout(checkContext, 100);
       }
     };
@@ -35,90 +37,206 @@ async function waitForValidContext(): Promise<void> {
   });
 }
 
-// Initialize loader after DOM is loaded and extension context is valid
-async function initializeLoader(): Promise<void> {
-  try {
-    await waitForValidContext();
-
-    // Check if extension is enabled
-    const isEnabled = await checkEnable();
-    if (!isEnabled) {
-      console.log('Extension is not enabled');
-      return;
-    }
-
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM loaded, starting loader');
-        startLoader();
-      });
-    } else {
-      console.log('DOM already loaded, starting loader');
-      startLoader();
-    }
-  } catch (error) {
-    console.error('Error initializing loader:', error);
+// Function to handle submission result detection and trigger upload
+function handleSubmissionResult(mutationsList: MutationRecord[], observer: MutationObserver) {
+  if (isUploading) {
+    // console.log('[Observer] Upload already in progress, ignoring mutations.');
+    return;
   }
-}
 
-// Only initialize if we're on a LeetCode or Programmers page
-if (window.location.hostname.includes('leetcode.com') || window.location.hostname.includes('programmers.co.kr')) {
-  console.log('Initializing loader for', window.location.hostname);
-  initializeLoader();
-}
+  let successDetected = false;
+  for (const mutation of mutationsList) {
+    if (mutation.type !== 'childList') continue; // Only interested in node additions/removals
 
-function startLoader(): void {
-  console.log('[startLoader] Loader interval started.');
-  loader = window.setInterval(async () => {
-    if (isUploading) {
-      // console.log('[startLoader] Upload already in progress, skipping check.');
-      return; // Skip if an upload is already happening
+    // Check added nodes for the success message more robustly
+    for (const node of Array.from(mutation.addedNodes)) {
+      if (!(node instanceof HTMLElement)) continue;
+
+      // Define selectors known to indicate success
+      const successSelectors = [
+        '.text-success',                             // LeetCode older UI?
+        '[data-e2e-locator="submission-result"]',    // LeetCode newer UI?
+        '.success__3Ai7',                            // Potential LeetCode classes
+        '.success__1x4n',                            // Potential LeetCode classes
+        '.success'                                   // General success class (Programmers?)
+      ];
+
+      // Check if the added node itself or its descendants match selectors AND contain success text
+      let potentialSuccessNode: Element | null = null;
+      if (successSelectors.some(selector => node.matches(selector))) {
+        potentialSuccessNode = node;
+      } else {
+        potentialSuccessNode = successSelectors.reduce<Element | null>((found, selector) => found || node.querySelector(selector), null);
+      }
+
+      if (potentialSuccessNode) {
+        const textContent = potentialSuccessNode.textContent || '';
+        if (textContent.includes('Accepted') || textContent.includes('Success') || textContent.includes('성공') /* Korean for Programmers */) {
+          console.log('[Observer] Success message detected via node:', potentialSuccessNode);
+          successDetected = true;
+          break; // Found success in this node, break inner loop
+        }
+      }
     }
+    if (successDetected) break; // Found success in this mutation, break outer loop
+  }
 
-    // Check for success message in different locations
-    const result = document.querySelector('.text-success') ||
-      document.querySelector('[data-e2e-locator="submission-result"]') ||
-      document.querySelector('.success__3Ai7') ||
-      document.querySelector('.success__1x4n');
+  if (successDetected) {
+    console.log('[Observer] Success detected flag is true. Starting upload process.');
+    isUploading = true; // Prevent further triggers for this submission
 
-    if (result?.textContent?.includes('Accepted') || result?.textContent?.includes('Success')) {
-      console.log('[startLoader] Success message detected.');
-      isUploading = true; // Set flag before starting upload process
+    // Optional: Disconnect observer here if desired
+    // observer.disconnect();
+    // console.log('[Observer] Disconnected after detecting success.');
+
+    (async () => {
       try {
         const leetcodeData = await parseData();
         if (isNotEmpty(leetcodeData)) {
-          console.log('[startLoader] Leetcode data parsed, calling beginUpload...');
+          console.log('[Observer] Leetcode data parsed, calling beginUpload...');
           startUpload(); // Mark upload start (visual feedback)
           await beginUpload(leetcodeData);
+          console.log('[Observer] beginUpload call finished.');
         } else {
-          console.log('[startLoader] Parsed data is empty, skipping upload.');
-          isUploading = false; // Reset flag if data is empty
+          console.log('[Observer] Parsed data is empty, skipping upload.');
+          // Reset flag early if no upload happens
+          isUploading = false;
         }
       } catch (error) {
-        console.error('[startLoader] Error during data parsing or upload initiation:', error);
-        isUploading = false; // Reset flag on error
+        console.error('[Observer] Error during data parsing or upload initiation:', error);
+        // Ensure flag is reset even if parseData or isNotEmpty fails
+        isUploading = false;
       } finally {
-        // It might be better to reset the flag *after* beginUpload finishes
-        // Let's move the reset logic to after the await beginUpload call
-        // For now, keep it here, but consider the timing.
-        // UPDATE: Moved reset to after await for better control
-        // isUploading = false; 
+        // Reset the flag after attempt, regardless of outcome
+        // Ensure it happens only if the process was started by this detection
+        if (isUploading) { // Double check if it was set to true
+          console.log('[Observer] Resetting isUploading flag in finally block.');
+          isUploading = false;
+        }
+        // If observer was disconnected, maybe reconnect it here or rely on page navigation to re-init
       }
-    } else {
-      // Optional: Log when success message is not found
-      // console.log('[startLoader] Success message not found.');
-    }
-  }, 2000); // Check every 2 seconds to reduce load
+    })(); // Immediately invoke the async function
+  }
 }
 
-// Only stop loader when the page is unloaded
-window.addEventListener('beforeunload', () => {
-  if (loader !== undefined) {
-    clearInterval(loader)
-    loader = undefined
+// Function to initialize and start the MutationObserver
+function startSubmissionObserver(): void {
+  // Disconnect existing observer first to prevent duplicates during SPA navigation
+  if (uploadObserver) {
+    console.log('[Observer] Disconnecting existing observer before starting a new one.');
+    uploadObserver.disconnect();
+    uploadObserver = null; // Clear the reference
   }
-})
+
+  // Select a target node that reliably exists and contains the submission results area
+  // document.body is broad; a more specific container is better if stable.
+  // Example: Find a common container for LeetCode/Programmers results.
+  // Let's stick with body for now, but this might need refinement.
+  const targetNode = document.body;
+  if (!targetNode) {
+    console.error('[Observer] Target node (document.body) not found.');
+    // Maybe retry finding the target after a short delay?
+    setTimeout(startSubmissionObserver, 500);
+    return;
+  }
+
+  const config: MutationObserverInit = {
+    childList: true, // Observe direct children additions/removals
+    subtree: true,   // Observe all descendants
+  };
+
+  uploadObserver = new MutationObserver(handleSubmissionResult);
+
+  console.log('[Observer] Starting MutationObserver to watch for submission results on target:', targetNode);
+  uploadObserver.observe(targetNode, config);
+
+  // Add a listener to disconnect the observer when navigating away
+  // Using 'beforeunload' might not be reliable for SPAs.
+  // A better approach might be needed if state persists across navigations.
+  // For now, keep 'beforeunload' but acknowledge its limitation.
+  const disconnectObserver = () => {
+    if (uploadObserver) {
+      console.log('[Observer] Disconnecting observer due to unload/navigation.');
+      uploadObserver.disconnect();
+      uploadObserver = null;
+    }
+  };
+  window.addEventListener('beforeunload', disconnectObserver);
+
+  // We might also need to handle history API changes for SPAs
+  // Example (needs testing):
+  // window.addEventListener('popstate', disconnectObserver);
+  // You might also need to wrap pushState/replaceState if LeetCode uses them extensively
+}
+
+// --- Initialization Logic ---
+async function initialize(): Promise<void> {
+  console.log('[Initializer] Starting initialization...');
+  try {
+    console.log('[Initializer] Waiting for valid context...');
+    await waitForValidContext();
+    console.log('[Initializer] Context valid. Checking if extension is enabled...');
+    const isEnabled = await getIsEnabled(); // Use exported function
+    console.log(`[Initializer] getIsEnabled returned: ${isEnabled}`);
+
+    if (!isEnabled) {
+      console.log('[Initializer] Extension is explicitly disabled. Initialization stopped.');
+      // Also ensure any existing observer is disconnected if the user disables the extension
+      if (uploadObserver) {
+        uploadObserver.disconnect();
+        uploadObserver = null;
+      }
+      return;
+    }
+
+    console.log('[Initializer] Extension is enabled. Starting submission observer.');
+    startSubmissionObserver();
+
+  } catch (error) {
+    console.error('[Initializer] Error during initialization:', error);
+  }
+}
+
+// --- Start Point ---
+// Use a flag to prevent multiple initializations on rapid SPA navigations
+let isInitializing = false;
+
+function handlePotentialInitialization() {
+  // Only attempt initialization if on the correct host and not already initializing
+  if (!isInitializing && (window.location.hostname.includes('leetcode.com') || window.location.hostname.includes('programmers.co.kr'))) {
+    isInitializing = true;
+    console.log('[Initializer] URL matches. Calling initialize...');
+    initialize().finally(() => {
+      isInitializing = false; // Reset flag after initialization attempt completes
+    });
+  } else {
+    console.log('[Initializer] Skipping initialization: Already initializing or wrong hostname.');
+  }
+}
+
+// Initial call for the first page load
+handlePotentialInitialization();
+
+// Attempt re-initialization on history changes (for SPA behavior)
+// Note: LeetCode might use pushState/replaceState which don't trigger popstate directly.
+// More advanced SPA handling might involve wrapping history functions or using webNavigation API.
+window.addEventListener('popstate', handlePotentialInitialization);
+
+// REMOVED history pushState/replaceState wrapping to fix linter error
+/*
+const originalPushState = history.pushState;
+history.pushState = function() {
+    //@ts-ignore
+    originalPushState.apply(this, arguments);
+    handlePotentialInitialization();
+};
+const originalReplaceState = history.replaceState;
+history.replaceState = function() {
+    //@ts-ignore
+    originalReplaceState.apply(this, arguments);
+    handlePotentialInitialization();
+};
+*/
 
 async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
   console.log(`[beginUpload] Started for: ${leetcodeData.title}`);
@@ -154,7 +272,6 @@ async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
     if (!currentVersion || currentVersion !== getVersion() || !initialHookSHA) {
       console.log(`[beginUpload] Version/SHA mismatch. Current: ${currentVersion}, App: ${getVersion()}, Hook SHA: ${initialHookSHA}. Running versionUpdate...`);
       await versionUpdate();
-      // Re-fetch stats needed for SHA check below, as versionUpdate modifies them
       stats = await getStats();
       if (!stats) {
         console.error('[beginUpload] Stats became null after versionUpdate during SHA check. Aborting.');
@@ -170,7 +287,6 @@ async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
 
     if (cachedSHA === calcSHA) {
       console.log('[beginUpload] Content already uploaded (SHA match). Marking CSS.');
-      // Re-fetch latest stats specifically for branches if needed for markUploadedCSS
       const latestStats = await getStats();
       markUploadedCSS(latestStats?.branches, leetcodeData.link);
       return;
@@ -183,7 +299,6 @@ async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
   } catch (error: any) {
     console.error('--- [beginUpload] Final Error Caught ---');
     console.error(`[beginUpload] Failed for: ${leetcodeData.title}`);
-    // Check if it's the context error we are tracking
     if (error.message?.includes('Extension context invalidated')) {
       console.error('[beginUpload] CRITICAL: Context invalidated error reached final catch block despite retries in storage.ts.');
     }
@@ -193,89 +308,18 @@ async function beginUpload(leetcodeData: LeetcodeData): Promise<void> {
 }
 
 async function versionUpdate(): Promise<void> {
-  const stats = await updateLocalStorageStats()
-  stats.version = getVersion()
-  await saveStats(stats)
+  console.log('[versionUpdate] Starting update...');
+  try {
+    const stats = await updateLocalStorageStats(); // Uses storage fns
+    stats.version = getVersion();
+    await saveStats(stats); // Uses storage fns
+    console.log('[versionUpdate] Finished successfully.');
+  } catch (error) {
+    console.error('[versionUpdate] Failed:', error);
+    // Decide if throwing is necessary or just log
+  }
 }
 
 function calculateBlobSHA(content: string): string {
   return sha1(`blob ${new Blob([content]).size}\0${content}`)
-}
-
-// Function to start the loader (Modified try/catch/finally)
-function startLoader_revised(): void {
-  console.log('[startLoader] Loader interval started.');
-  loader = window.setInterval(async () => {
-    if (isUploading) {
-      return; // Skip if an upload is already happening
-    }
-
-    const result = document.querySelector('.text-success') ||
-      document.querySelector('[data-e2e-locator="submission-result"]') ||
-      document.querySelector('.success__3Ai7') ||
-      document.querySelector('.success__1x4n');
-
-    if (result?.textContent?.includes('Accepted') || result?.textContent?.includes('Success')) {
-      console.log('[startLoader] Success message detected.');
-      isUploading = true; // Set flag: upload is starting
-      try {
-        const leetcodeData = await parseData();
-        if (isNotEmpty(leetcodeData)) {
-          console.log('[startLoader] Leetcode data parsed, calling beginUpload...');
-          startUpload(); // Mark upload start (visual feedback)
-          await beginUpload(leetcodeData);
-          console.log('[startLoader] beginUpload call finished.');
-        } else {
-          console.log('[startLoader] Parsed data is empty, skipping upload.');
-          // Reset flag early if no upload happens
-          isUploading = false;
-        }
-      } catch (error) {
-        console.error('[startLoader] Error during data parsing or upload initiation:', error);
-      } finally {
-        // Reset the flag regardless of success or failure of beginUpload
-        console.log('[startLoader] Resetting isUploading flag.');
-        isUploading = false;
-      }
-    }
-  }, 2000); // Check every 2 seconds
-}
-
-// Replace the final initialization call
-if (window.location.hostname.includes('leetcode.com') || window.location.hostname.includes('programmers.co.kr')) {
-  console.log('Calling initializeLoader_revised for', window.location.hostname);
-  initializeLoader_revised(); // Make sure this calls the function defined above
-}
-
-async function initializeLoader_revised(): Promise<void> {
-  console.log('[initializeLoader] Starting initialization...');
-  try {
-    console.log('[initializeLoader] Waiting for valid context...');
-    await waitForValidContext();
-    console.log('[initializeLoader] Context valid. Checking if extension is enabled...');
-    const isEnabled = await checkEnable();
-    console.log(`[initializeLoader] checkEnable returned: ${isEnabled}`);
-
-    // === Strict Check ===
-    if (!isEnabled) {
-      console.log('[initializeLoader] Extension is explicitly disabled. Loader will NOT start.');
-      // Stop execution here, do not proceed to add event listeners or start the loader.
-      return;
-    }
-    // ====================
-
-    console.log('[initializeLoader] Extension is enabled. Checking DOM state...');
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('[initializeLoader] DOM loaded, starting loader.');
-        startLoader_revised(); // Start the loader interval
-      });
-    } else {
-      console.log('[initializeLoader] DOM already loaded, starting loader.');
-      startLoader_revised(); // Start the loader interval
-    }
-  } catch (error) {
-    console.error('[initializeLoader] Error during initialization:', error);
-  }
 }
