@@ -38,9 +38,22 @@ async function waitForValidContext(): Promise<void> {
 async function initializeLoader(): Promise<void> {
   try {
     await waitForValidContext();
+
+    // Check if extension is enabled
+    const isEnabled = await checkEnable();
+    if (!isEnabled) {
+      console.log('Extension is not enabled');
+      return;
+    }
+
+    // Wait for DOM to be ready
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => startLoader());
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, starting loader');
+        startLoader();
+      });
     } else {
+      console.log('DOM already loaded, starting loader');
       startLoader();
     }
   } catch (error) {
@@ -48,8 +61,11 @@ async function initializeLoader(): Promise<void> {
   }
 }
 
-// Start initialization
-initializeLoader();
+// Only initialize if we're on a LeetCode or Programmers page
+if (window.location.hostname.includes('leetcode.com') || window.location.hostname.includes('programmers.co.kr')) {
+  console.log('Initializing loader for', window.location.hostname);
+  initializeLoader();
+}
 
 function startLoader(): void {
   loader = window.setInterval(async () => {

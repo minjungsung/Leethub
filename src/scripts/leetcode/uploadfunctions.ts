@@ -40,7 +40,6 @@ async function upload(
     const stats: Stats = await getStats()
 
     const directory = `LeetCode/${leetcodeData.title.replace(/\s+/g, '-')}`
-    console.log('leetcodeData', JSON.stringify(leetcodeData, null, 2))
     const filename = `Solution.${getLanguageExtension(leetcodeData.language)}`
     const sourceText = leetcodeData.codeSnippet
     const readmeText = `# ${leetcodeData.title}\n\n${leetcodeData.description}`
