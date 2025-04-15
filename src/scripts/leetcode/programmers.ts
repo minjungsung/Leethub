@@ -15,7 +15,41 @@ import { checkEnable } from '../enable'
 
 let loader: number | undefined
 
-startLoader()
+// Check if extension context is valid
+function isExtensionContextValid(): boolean {
+  return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id !== undefined;
+}
+
+// Wait for extension context to be valid
+async function waitForValidContext(): Promise<void> {
+  return new Promise((resolve) => {
+    const checkContext = () => {
+      if (isExtensionContextValid()) {
+        resolve();
+      } else {
+        setTimeout(checkContext, 100);
+      }
+    };
+    checkContext();
+  });
+}
+
+// Initialize loader after DOM is loaded and extension context is valid
+async function initializeLoader(): Promise<void> {
+  try {
+    await waitForValidContext();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => startLoader());
+    } else {
+      startLoader();
+    }
+  } catch (error) {
+    console.error('Error initializing loader:', error);
+  }
+}
+
+// Start initialization
+initializeLoader();
 
 function startLoader(): void {
   loader = window.setInterval(async () => {
