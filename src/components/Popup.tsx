@@ -137,8 +137,6 @@ const Popup: React.FC = () => {
                 {leethubHook || 'Not Set'}
               </a>
             </p>
-            <p>Problems Solved: {stats?.solved ?? 0}</p>
-            {/* Add Toggle Switch */}
             <div className="ui toggle checkbox">
               <input
                 type="checkbox"
