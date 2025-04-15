@@ -249,3 +249,8 @@ export async function getDirNameByOrgOption(
   if ((await getOrgOption()) === 'language') dirName = `${language}/${dirName}`
   return dirName
 }
+
+export async function getBranchName(): Promise<string> {
+  const { branch } = await chrome.storage.local.get('branch');
+  return branch || 'main';
+}
