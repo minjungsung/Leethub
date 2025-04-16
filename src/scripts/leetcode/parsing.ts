@@ -26,8 +26,9 @@ export async function parseData(): Promise<LeetcodeData> {
       .querySelector('meta[property="og:url"]')
       ?.getAttribute('content') || ''
 
-  const codeBlock = document.querySelector('pre')
+  const codeBlock = document.querySelector('pre code')
   const codeSnippet = codeBlock ? codeBlock.textContent || '' : ''
+  console.log('codeSnippet', codeSnippet)
 
   const languageElement = document.querySelector('[data-mode-id]')
   const language = languageElement

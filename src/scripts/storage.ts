@@ -42,47 +42,72 @@ function isContextValid(): boolean {
 }
 
 // Helper function to wait for context
-async function waitForValidContext(retries = 3, delay = 100): Promise<void> {
+async function waitForValidContext(retries = 3, delay = 100): Promise<boolean> {
   for (let i = 0; i < retries; i++) {
-    if (isContextValid()) return;
+    if (isContextValid()) return true;
     console.warn(`Context invalid, retrying (${i + 1}/${retries})...`);
     await new Promise(resolve => setTimeout(resolve, delay));
   }
-  throw new Error('Extension context invalidated after multiple retries.');
+  console.error('Extension context remained invalid after short wait.');
+  return false;
 }
 
-async function getObjectFromLocalStorage(key: string, retries = 3): Promise<any> {
-  for (let attempt = 1; attempt <= retries; attempt++) {
+export async function getObjectFromLocalStorage(key: string): Promise<any> {
+  const maxRetries = 3;
+  const retryDelay = 1000;
+
+  for (let i = 0; i < maxRetries; i++) {
+    const contextIsValid = await waitForValidContext(3, 100);
+
+    if (!contextIsValid) {
+      console.warn(`getObjectFromLocalStorage(${key}): Context invalid before attempt ${i + 1}. Will retry after ${retryDelay}ms.`);
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+      continue;
+    }
+
     try {
-      await waitForValidContext(1, 50); // Quick check before attempting
-      return await new Promise((resolve, reject) => {
+      if (!chrome?.storage?.local) {
+        throw new Error('Chrome storage API not available');
+      }
+
+      const result = await new Promise((resolve, reject) => {
         chrome.storage.local.get(key, (value) => {
           if (chrome.runtime.lastError) {
-            // Check for context invalidated error specifically
             if (chrome.runtime.lastError.message?.includes('context invalidated')) {
-              console.warn(`getObjectFromLocalStorage: Context invalidated on attempt ${attempt}. Retrying...`);
-              reject(new Error('Context Invalidated')); // Reject to trigger retry
+              console.warn(`getObjectFromLocalStorage(${key}): Context invalidated during storage.local.get (Attempt ${i + 1}).`);
+              reject(new Error('Context Invalidated During Call'));
             } else {
-              console.error('getObjectFromLocalStorage Error:', chrome.runtime.lastError);
-              reject(chrome.runtime.lastError); // Reject with the actual error
+              console.error(`getObjectFromLocalStorage(${key}) Error during get:`, chrome.runtime.lastError);
+              reject(new Error(chrome.runtime.lastError.message));
             }
           } else {
             resolve(value[key]);
           }
         });
       });
+
+      return result;
+
     } catch (error: any) {
-      if (error.message === 'Context Invalidated' && attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, 100 * attempt)); // Exponential backoff
-        continue; // Retry the loop
+      if (error.message === 'Context Invalidated During Call') {
+        console.warn(`Retry ${i + 1}/${maxRetries} for getObjectFromLocalStorage(${key}) due to context invalidation during call.`);
       } else {
-        console.error(`getObjectFromLocalStorage failed after ${attempt} attempts for key: ${key}`, error);
-        // If it's the last attempt or a different error, throw it
-        throw error;
+        console.error(`getObjectFromLocalStorage(${key}) encountered other error on attempt ${i + 1}:`, error);
+        if (i === maxRetries - 1) {
+          console.error(`getObjectFromLocalStorage failed after ${maxRetries} attempts for key: ${key}`, error);
+          throw error;
+        }
+      }
+
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
       }
     }
   }
-  // Should not be reached if retries are exhausted, as error is thrown
+
+  console.error(`getObjectFromLocalStorage failed permanently after ${maxRetries} attempts for key: ${key}.`);
   throw new Error(`getObjectFromLocalStorage failed permanently for key: ${key}`);
 }
 
@@ -123,15 +148,27 @@ export async function removeObjectFromLocalStorage(
   keys: string | string[],
   retries = 3
 ): Promise<void> {
+  const retryDelay = 1000;
   for (let attempt = 1; attempt <= retries; attempt++) {
+    const contextIsValid = await waitForValidContext(3, 100);
+    if (!contextIsValid) {
+      console.warn(`removeObjectFromLocalStorage: Context invalid before attempt ${attempt}. Retrying after delay...`);
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+      continue;
+    }
+
     try {
-      await waitForValidContext(1, 50);
-      return await new Promise<void>((resolve, reject) => {
+      if (!chrome?.storage?.local) {
+        throw new Error('Chrome storage API not available');
+      }
+      await new Promise<void>((resolve, reject) => {
         chrome.storage.local.remove(keys, () => {
           if (chrome.runtime.lastError) {
             if (chrome.runtime.lastError.message?.includes('context invalidated')) {
-              console.warn(`removeObjectFromLocalStorage: Context invalidated on attempt ${attempt}. Retrying...`);
-              reject(new Error('Context Invalidated'));
+              console.warn(`removeObjectFromLocalStorage: Context invalidated during call (Attempt ${attempt}).`);
+              reject(new Error('Context Invalidated During Call'));
             } else {
               console.error('removeObjectFromLocalStorage Error:', chrome.runtime.lastError);
               reject(chrome.runtime.lastError);
@@ -141,13 +178,20 @@ export async function removeObjectFromLocalStorage(
           }
         });
       });
+      return;
+
     } catch (error: any) {
-      if (error.message === 'Context Invalidated' && attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, 100 * attempt));
-        continue;
+      if (error.message === 'Context Invalidated During Call') {
+        console.warn(`Retry ${attempt}/${retries} for removeObjectFromLocalStorage due to context invalidation during call.`);
       } else {
-        console.error(`removeObjectFromLocalStorage failed after ${attempt} attempts for keys:`, keys, error);
-        throw error;
+        console.error(`removeObjectFromLocalStorage encountered other error on attempt ${attempt}:`, error);
+        if (attempt === retries) {
+          console.error(`removeObjectFromLocalStorage failed after ${retries} attempts for keys:`, keys, error);
+          throw error;
+        }
+      }
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
       }
     }
   }
@@ -331,15 +375,27 @@ export async function getDirNameByOrgOption(
 }
 
 export async function getBranchName(retries = 3): Promise<string> {
+  const retryDelay = 1000;
   for (let attempt = 1; attempt <= retries; attempt++) {
+    const contextIsValid = await waitForValidContext(3, 100);
+    if (!contextIsValid) {
+      console.warn(`getBranchName: Context invalid before attempt ${attempt}. Retrying after delay...`);
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+      continue;
+    }
+
     try {
-      await waitForValidContext(1, 50);
-      return await new Promise<string>((resolve, reject) => {
+      if (!chrome?.storage?.local) {
+        throw new Error('Chrome storage API not available');
+      }
+      const branch = await new Promise<string>((resolve, reject) => {
         chrome.storage.local.get('branch', ({ branch }) => {
           if (chrome.runtime.lastError) {
             if (chrome.runtime.lastError.message?.includes('context invalidated')) {
-              console.warn(`getBranchName: Context invalidated on attempt ${attempt}. Retrying...`);
-              reject(new Error('Context Invalidated'));
+              console.warn(`getBranchName: Context invalidated during call (Attempt ${attempt}).`);
+              reject(new Error('Context Invalidated During Call'));
             } else {
               console.error('getBranchName Error:', chrome.runtime.lastError);
               reject(chrome.runtime.lastError);
@@ -349,13 +405,20 @@ export async function getBranchName(retries = 3): Promise<string> {
           }
         });
       });
+      return branch;
+
     } catch (error: any) {
-      if (error.message === 'Context Invalidated' && attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, 100 * attempt));
-        continue;
+      if (error.message === 'Context Invalidated During Call') {
+        console.warn(`Retry ${attempt}/${retries} for getBranchName due to context invalidation during call.`);
       } else {
-        console.error(`getBranchName failed after ${attempt} attempts`, error);
-        throw error;
+        console.error(`getBranchName encountered other error on attempt ${attempt}:`, error);
+        if (attempt === retries) {
+          console.error(`getBranchName failed after ${retries} attempts`, error);
+          throw error;
+        }
+      }
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
       }
     }
   }
