@@ -1,0 +1,23 @@
+name: Publish Wiki
+on:
+  push:
+    branches: [main]
+    paths: ['wiki/**']
+  workflow_dispatch:
+concurrency:
+  group: publish-wiki
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        env:
+          WIKI_DIR: wiki/
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_MAIL: "147850869+minjungsung@users.noreply.github.com"
+          GH_NAME: "minjungsung"
