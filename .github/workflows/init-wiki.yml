@@ -1,0 +1,39 @@
+name: Init Wiki
+on:
+  workflow_dispatch:
+jobs:
+  init-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create wiki page
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Initialize wiki by creating first page
+            const { owner, repo } = context.repo;
+            try {
+              await github.rest.repos.createPagesSite({
+                owner,
+                repo,
+              });
+            } catch(e) {}
+            
+            // Actually create wiki via git
+            const { execSync } = require("child_process");
+            execSync(`
+              git config --global user.email "action@github.com"
+              git config --global user.name "GitHub Action"
+              mkdir -p /tmp/wiki
+              cd /tmp/wiki
+              git init -b master
+              echo "# Wiki\nInitializing..." > Home.md
+              git add .
+              git commit -m "docs: initialize wiki"
+              git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${owner}/${repo}.wiki.git
+              git push -u origin master
+            `);
+            console.log("Wiki initialized!");
+
