@@ -15,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Publish wiki
+        continue-on-error: true
         uses: Andrew-Chen-Wang/github-wiki-action@v4
         with:
           strategy: init
