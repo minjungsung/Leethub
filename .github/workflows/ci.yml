@@ -12,21 +12,22 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      npm_config_legacy_peer_deps: 'false'
+      npm_config_force: 'false'
+      npm_config_strict_peer_deps: 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
       - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci --legacy-peer-deps
-          else
-            npm install --legacy-peer-deps
-          fi
-      - name: Lint
-        run: npm run lint --if-present
-        continue-on-error: true
+        run: npm ci
+      - name: Test
+        run: npm test -- --watchAll=false
       - name: Build
-        run: npm run build --if-present
-        continue-on-error: true
+        run: npm run build

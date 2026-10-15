@@ -7,7 +7,7 @@ import {
   updateLocalStorageStats,
   getIsEnabled
 } from '../storage'
-import { getVersion, isNull } from '../util'
+import { getVersion } from '../util'
 import { parseData } from './parsing'
 import { uploadOneSolveProblemOnGit } from './uploadfunctions'
 import { isNotEmpty, markUploadedCSS, startUpload } from './util'

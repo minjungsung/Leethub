@@ -153,7 +153,7 @@ $('#hook_button').on('click', () => {
 
     chrome.storage.local.get('leethub_token', (data) => {
       const token = data.leethub_token
-      if (!token) {
+      if (typeof token !== 'string' || !token) {
         $('#error').text(
           'Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
         )
@@ -164,7 +164,7 @@ $('#hook_button').on('click', () => {
       } else {
         chrome.storage.local.get('leethub_username', (data2) => {
           const username = data2.leethub_username
-          if (!username) {
+          if (typeof username !== 'string' || !username) {
             $('#error').text(
               'Improper Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
             )
@@ -195,7 +195,7 @@ chrome.storage.local.get('mode_type', (data) => {
   if (mode && mode === 'commit') {
     chrome.storage.local.get('leethub_token', (data2) => {
       const token = data2.leethub_token
-      if (!token) {
+      if (typeof token !== 'string' || !token) {
         $('#error').text(
           'Authorization error - Grant LeetHub access to your GitHub account to continue (click LeetHub extension on the top right to proceed)'
         )
@@ -208,7 +208,7 @@ chrome.storage.local.get('mode_type', (data) => {
       } else {
         chrome.storage.local.get('leethub_hook', (repoName) => {
           const hook = repoName.leethub_hook
-          if (!hook) {
+          if (typeof hook !== 'string' || !hook) {
             $('#error').text(
               'Improper Authorization error - Grant LeetHub access to your GitHub account to continue (click LeetHub extension on the top right to proceed)'
             )

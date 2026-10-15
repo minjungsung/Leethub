@@ -9,7 +9,7 @@ import { getStats, getHook, getIsEnabled, saveIsEnabled } from '../scripts/stora
 const Popup: React.FC = () => {
   const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('auth')
   const [leethubHook, setLeethubHook] = useState<string>(WELCOME_URL)
-  const [stats, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
+  const [, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
   const [isEnabled, setIsEnabledState] = useState<boolean>(false); // Renamed state setter for clarity
 
   const updateComponentState = useCallback(async () => {
@@ -40,7 +40,7 @@ const Popup: React.FC = () => {
     browser.storage.local
       .get(['leethub_token', 'mode_type', 'leethub_hook']) // No need to get bjhEnable here directly
       .then(async (data: Record<string, any>) => {
-        const { leethub_token, mode_type, leethub_hook } = data;
+        const { leethub_token, leethub_hook } = data;
         // Fetch enabled status using the new function
         const enabledStatus = await getIsEnabled();
         setIsEnabledState(enabledStatus);
