@@ -1,7 +1,7 @@
-import { WELCOME_URL } from '../constants/Url'
 import { Request } from '../types/Request'
 interface Sender {
-  // Define any properties used from the sender object here
+  id?: string
+  url?: string
 }
 
 type SendResponse = (response?: any) => void
@@ -17,24 +17,23 @@ function handleMessage(
   sender: Sender,
   sendResponse: SendResponse
 ): boolean {
-  if (request && request.closeWebPage === true && request.isSuccess === true) {
-    chrome.storage.local.set({ leethub_username: request.username })
-    chrome.storage.local.set({ leethub_token: request.token })
-    chrome.storage.local.set({ pipe_leethub: false }, () => {
-      console.info('Closed pipe.')
-    })
-
-    chrome.tabs.create({ url: WELCOME_URL, selected: true }) // creates new tab
-  } else if (
-    request &&
-    request.closeWebPage === true &&
-    request.isSuccess === false
+  // Authentication belongs to extension-owned pages, never content scripts.
+  if (request && request.closeWebPage) {
+    sendResponse({ error: 'Content-script authentication is disabled' })
+    return false
+  }
+  let senderOrigin: string
+  try { senderOrigin = new URL(sender.url ?? '').origin } catch { return false }
+  if (
+    sender.id !== chrome.runtime.id ||
+    !sender.url ||
+    !['https://leetcode.com', 'https://practice.geeksforgeeks.org',
+      'https://www.acmicpc.net', 'https://school.programmers.co.kr',
+      'https://swexpertacademy.com', 'https://level.goorm.io'].includes(senderOrigin)
   ) {
-    alert('Something went wrong while trying to authenticate your profile!')
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) chrome.tabs.remove(tabs[0].id)
-    })
-  } else if (
+    return false
+  }
+  if (
     request &&
     request.sender === 'leetcode' &&
     request.task === 'SolvedApiCall'
