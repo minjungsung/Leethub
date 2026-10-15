@@ -1,6 +1,5 @@
 import { map } from '../../constants/Map'
 import { LeetcodeData } from '../../types/LeetcodeData'
-import { getDateString } from './util'
 
 export async function parseData(): Promise<LeetcodeData> {
   const title =
@@ -46,7 +45,7 @@ export async function parseData(): Promise<LeetcodeData> {
 }
 
 export function convertSingleCharToDoubleChar(text: string): string {
-  return text.replace(/[!%&()*+,\-./:;<=>?@\[\\\]^_`{|}~ ]/g, function (m) {
+  return text.replace(/[!%&()*+,\-./:;<=>?@[\\\]^_`{|}~ ]/g, function (m) {
     return map[m as keyof typeof map]
   })
 }
