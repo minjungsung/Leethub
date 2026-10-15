@@ -1,0 +1,46 @@
+name: Strict Wiki Validation
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.project.timeout-minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [{"name":"root-node","ecosystem":"npm","path":".","runtime-version":"20","manifest":"package.json","lockfile":"package-lock.json","timeout-minutes":15}]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        if: startsWith(matrix.project.ecosystem, 'python-')
+        with:
+          python-version: ${{ matrix.project.runtime-version }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        if: matrix.project.ecosystem == 'npm'
+        with:
+          node-version: ${{ matrix.project.runtime-version }}
+      - uses: actions/setup-java@c5195efecf7bdfc987ee1f5aa9d5bd51a36585f2
+        if: matrix.project.ecosystem == 'gradle'
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.project.runtime-version }}
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: minjungsung/.github
+          ref: 1749d8b2d4eacf6540347c142fc2d544c68c2d14
+          path: .wiki-policy-source
+          persist-credentials: false
+      - name: Install checksum-verified workflow lint
+        if: matrix.project.ecosystem == 'github-actions'
+        run: bash .wiki-policy-source/dependency-policy/scripts/install_actionlint.sh
+      - name: Strictly validate the actual wiki source commit
+        env:
+          PROJECT_JSON: ${{ toJSON(matrix.project) }}
+          PYTHONPATH: .wiki-policy-source/dependency-policy
+          PIP_NO_CACHE_DIR: '1'
+        run: python3 .wiki-policy-source/dependency-policy/scripts/run_project.py --project-json "$PROJECT_JSON" --repository-root "$GITHUB_WORKSPACE"
