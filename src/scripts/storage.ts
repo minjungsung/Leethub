@@ -401,7 +401,7 @@ export async function getBranchName(retries = 3): Promise<string> {
               reject(chrome.runtime.lastError);
             }
           } else {
-            resolve(branch || 'main');
+            resolve(typeof branch === 'string' && branch ? branch : 'main');
           }
         });
       });

@@ -12,7 +12,7 @@ const Welcome: React.FC = () => {
   const handleGetStartedClick = async () => {
     const data = await browser.storage.local.get('leethub_token')
     const token = data.leethub_token
-    if (!token) {
+    if (typeof token !== 'string' || !token) {
       // Not authorized yet.
       document.getElementById('error')!.textContent =
         'Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
@@ -24,7 +24,7 @@ const Welcome: React.FC = () => {
     } else {
       const data2 = await browser.storage.local.get('leethub_username')
       const username = data2.leethub_username
-      if (!username) {
+      if (typeof username !== 'string' || !username) {
         // Improper authorization.
         document.getElementById('error')!.textContent =
           'Improper Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
@@ -70,7 +70,7 @@ const Welcome: React.FC = () => {
           hidden
           id='unlink'
         >
-          Linked the wrong repo? <a href='#'>Unlink</a>.
+          Linked the wrong repo? Link the correct repository below.
         </p>{' '}
         {/* Ensure you replace # with actual link */}
       </div>
@@ -154,7 +154,7 @@ const Welcome: React.FC = () => {
             <br />
             <a
               style={{ color: 'aqua', fontSize: '0.8em' }}
-              target='_blank'
+              target='_blank' rel='noopener noreferrer'
               href='https://github.com/minjungsung/leethub/labels/feature'
             >
               Request a feature!
@@ -173,7 +173,7 @@ const Welcome: React.FC = () => {
         <div className='ui inverted small header'>
           <a
             style={{ color: 'rgb(226, 243, 243)' }}
-            target='_blank'
+            target='_blank' rel='noopener noreferrer'
             href='https://github.com/minjungsung/leethub'
           >
             Star leethub on GitHub
