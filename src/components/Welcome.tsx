@@ -6,6 +6,25 @@ import 'semantic-ui-css/semantic.min.css'
 import { createRepo, linkRepo } from '../scripts/welcome'
 
 const Welcome: React.FC = () => {
+  const [accessToken, setAccessToken] = useState<string>('')
+  const [authMessage, setAuthMessage] = useState<string>('')
+  const authenticate = async () => {
+    const token = accessToken.trim()
+    if (!token) { setAuthMessage('Enter a repository-scoped GitHub token.'); return }
+    try {
+      const response = await fetch('https://api.github.com/user', {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+      })
+      if (!response.ok) throw new Error('Token rejected')
+      const user = await response.json()
+      if (typeof user.login !== 'string' || !user.login) throw new Error('Invalid account response')
+      await browser.storage.local.set({ leethub_token: token, leethub_username: user.login })
+      setAccessToken('')
+      setAuthMessage('GitHub connected. Select your repository below.')
+    } catch {
+      setAuthMessage('GitHub authentication failed. Check the token and its repository access.')
+    }
+  }
   const [repository, setRepository] = useState<string>('')
   const [repOption, setRepOption] = useState<string>('')
   const [orgOption, setOrgOption] = useState<string>('')
@@ -73,6 +92,16 @@ const Welcome: React.FC = () => {
           Linked the wrong repo? Link the correct repository below.
         </p>{' '}
         {/* Ensure you replace # with actual link */}
+      </div>
+
+      <div className='sixteen wide column'>
+        <label htmlFor='access-token'>Repository-scoped GitHub token</label>
+        <input id='access-token' type='password' autoComplete='off'
+          value={accessToken} onChange={(event) => setAccessToken(event.target.value)} />
+        <p>Use a fine-grained token with Contents read and write for your selected repository.
+          The token is stored locally in this browser extension.</p>
+        <button type='button' onClick={authenticate}>Connect GitHub</button>
+        <p role='status'>{authMessage}</p>
       </div>
 
       {/* Create Hook */}
