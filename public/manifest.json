@@ -3,7 +3,7 @@
   "name": "LeetHub",
   "short_name": "LeetHub",
   "description": "Sync accepted LeetCode submissions to a selected GitHub repository.",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "action": {
     "default_icon": {
       "16": "assets/icon-16.png",

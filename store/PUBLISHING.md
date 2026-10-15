@@ -2,7 +2,7 @@
 
 ## Prepared package
 
-Build and package with `npm run package`. Upload `artifacts/leethub-1.0.8.zip` as a Chrome extension in the Chrome Web Store developer dashboard. All executable code is bundled locally; source maps and unrelated archived assets are excluded.
+Build and package with `npm run package`. Upload `artifacts/leethub-1.0.9.zip` as a Chrome extension in the Chrome Web Store developer dashboard. All executable code is bundled locally; source maps and unrelated archived assets are excluded.
 
 Store copy and permission explanations are in [LISTING.md](LISTING.md). The privacy policy is in [PRIVACY.md](../PRIVACY.md). Graphic assets are in `store/assets`.
 
