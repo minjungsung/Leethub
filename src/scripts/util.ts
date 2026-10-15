@@ -67,7 +67,7 @@ export function unescapeHtml(text: string): string {
 }
 
 export function convertSingleCharToDoubleChar(text: string): string {
-  return text.replace(/[!%&()*+,\-./:;<=>?@\[\\\]^_`{|}~ ]/g, (m) => {
+  return text.replace(/[!%&()*+,\-./:;<=>?@[\\\]^_`{|}~ ]/g, (m) => {
     return map[m as keyof typeof map]
   })}
 

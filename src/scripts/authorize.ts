@@ -34,7 +34,7 @@ const localAuth: LocalAuth = {
         if (tab?.id) chrome.tabs.remove(tab.id)
       })
     } else {
-      const accessCode = url.match(/\?code=([\w\/\-]+)/)
+      const accessCode = url.match(/\?code=([\w/-]+)/)
       if (accessCode) {
         this.requestToken(accessCode[1])
       }
