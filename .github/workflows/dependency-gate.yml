@@ -13,11 +13,11 @@ jobs:
   validate-dependencies:
     permissions:
       contents: read
-    uses: minjungsung/.github/.github/workflows/dependency-validation.yml@912a4df6333443b9f8a012275627d971a8218a03
+    uses: minjungsung/.github/.github/workflows/dependency-validation.yml@0b9ee15e26f054586eeeab7601edebb9a32bfe57
     with:
       pr-author: ${{ github.event.pull_request.user.login || 'policy-push' }}
       projects-json: '[{"name":"root-node","ecosystem":"npm","path":".","runtime-version":"20","manifest":"package.json","lockfile":"package-lock.json","timeout-minutes":15}]'
-      policy-ref: 912a4df6333443b9f8a012275627d971a8218a03
+      policy-ref: 0b9ee15e26f054586eeeab7601edebb9a32bfe57
 
   dependency-gate:
     name: dependency-gate
@@ -48,7 +48,8 @@ jobs:
       - name: Approve and enable auto-merge
         if: >-
           steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' ||
-          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor' ||
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
@@ -58,7 +59,8 @@ jobs:
       - name: Require manual review for other update types
         if: >-
           steps.dependabot-metadata.outputs.update-type != 'version-update:semver-patch' &&
-          steps.dependabot-metadata.outputs.update-type != 'version-update:semver-minor'
+          steps.dependabot-metadata.outputs.update-type != 'version-update:semver-minor' &&
+          steps.dependabot-metadata.outputs.update-type != 'version-update:semver-major'
         env:
           UPDATE_TYPE: ${{ steps.dependabot-metadata.outputs.update-type }}
         run: |
