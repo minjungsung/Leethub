@@ -33,9 +33,18 @@ async function main() {
       if (result.exceptionDetails) throw new Error(result.exceptionDetails.text)
       return result.result.value
     }
+    async function checkPopupLayout(label) {
+      await delay(100)
+      const layout = await evaluate("(()=>{const p=document.querySelector('.popup');return {height:document.querySelector('.popup-window').offsetHeight,verticalOverflow:p.scrollHeight>p.clientHeight,horizontalOverflow:p.scrollWidth>p.clientWidth,footerVisible:document.querySelector('.popup-footer').getBoundingClientRect().bottom<=p.getBoundingClientRect().bottom}})()")
+      if (layout.height > 600 || layout.verticalOverflow || layout.horizontalOverflow || !layout.footerVisible) {
+        throw new Error(`${label} popup does not fit: ${JSON.stringify(layout)}`)
+      }
+      console.log(`${label} popup fits: ${layout.height}px`)
+    }
     const state = await evaluate("Promise.all([chrome.runtime.sendMessage({task:'status'}),chrome.storage.local.get(null)]).then(([s,d])=>({title:document.querySelector('h1')?.textContent,enabled:s.enabled,migrated:d.isSync,error:s.error||null}))")
     if (state.title !== 'LeetHub' || !state.migrated || state.error) throw new Error('Popup / service worker smoke failed')
     console.log('Popup / worker smoke passed:', JSON.stringify(state))
+    await checkPopupLayout('Unconnected')
     fs.mkdirSync(path.join(root, 'store/assets'), { recursive: true })
     // Rasterize the shared vector mark at high resolution for crisp small icons.
     const mark = fs.readFileSync(path.join(root, 'public/assets/leethub-mark.svg'), 'utf8')
@@ -49,8 +58,16 @@ async function main() {
     // Fictional local demonstration data: no live account, token, submission or API write.
     await evaluate("chrome.storage.local.set({leethub_hook:'example/solutions',bjhEnable:true,stats:{problems:{'example/solutions/1':{difficulty:'Easy'},'example/solutions/2':{difficulty:'Medium'}}}})")
     await delay(300)
+    await checkPopupLayout('Connected')
     const screenshot = await page.Page.captureScreenshot({ format: 'png' })
     fs.writeFileSync(path.join(root, 'store/assets/popup-1280x800.png'), Buffer.from(screenshot.data, 'base64'))
+    await evaluate("chrome.storage.local.set({bjhEnable:false,lastUpload:{url:'https://github.com/example/solutions'},lastError:'GitHub 401: reconnect your account and try again.'})")
+    await checkPopupLayout('Paused with latest solution and error')
+    await evaluate("(()=>{const p=document.querySelector('[role=status]');p.classList.add('visible');p.textContent='Upload failed. Reconnect GitHub and try again.'})()")
+    await checkPopupLayout('Paused with error and upload feedback')
+    await evaluate("chrome.storage.local.set({leethub_hook:'example-with-a-long-owner-name/repository-with-a-long-name',bjhEnable:true})")
+    await checkPopupLayout('Long repository name')
+    await evaluate("chrome.storage.local.remove(['lastUpload','lastError']).then(()=>chrome.storage.local.set({leethub_hook:'example/solutions'}))")
     await evaluate("location.hash='/welcome'")
     await delay(300)
     const setup = await page.Page.captureScreenshot({ format: 'png' })

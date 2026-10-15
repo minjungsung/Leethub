@@ -19,3 +19,9 @@ The corner radius was subsequently reduced to 12px, card corners to 14px, and th
 ## Shared icon update
 
 The toolbar, popup, and setup header now share an independent vector mark: white code brackets and a sky-blue upload arrow on a dark navy rounded tile. Raster icons at 16, 32, 48, and 128px are generated from `public/assets/leethub-mark.svg`; store screenshot generation uses the same source. The page favicon uses the current icon as well.
+
+## Popup layout without routine scrolling
+
+The connected popup uses a compact header, a single row for total and difficulty counts, shorter card spacing, and a concise accepted-submission form. The input retains its accessible label. Long repository names use an ellipsis with the full name available on hover. Existing controls and feedback remain available.
+
+Isolated Chrome layout checks confirmed no horizontal or vertical overflow and a visible footer for unconnected (524px), connected (464px), paused with latest solution and an error (556px), paused with both error and upload feedback (594px), and long repository name (571px) states. Unusually long external error messages can still use the scroll fallback rather than being clipped.

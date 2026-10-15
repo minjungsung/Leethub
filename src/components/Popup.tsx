@@ -38,8 +38,8 @@ const Popup: React.FC = () => {
     {data.leethub_hook ? <>
       <section className='repository-card'>
         <div className='section-top'><span className='eyebrow'>Repository</span><span className={`status-badge ${enabled ? 'active' : ''}`}><span className='status-dot' />{enabled ? 'Active' : 'Paused'}</span></div>
-        <a className='repository-name' href={`https://github.com/${data.leethub_hook}`} target='_blank' rel='noopener noreferrer'><Icon name='repository' /><span>{data.leethub_hook}</span><Icon name='arrow' className='repository-arrow' /></a>
-        <div className='sync-control'><div><strong>Auto upload</strong><p>Sync accepted solutions automatically.</p></div>
+        <a className='repository-name' href={`https://github.com/${data.leethub_hook}`} target='_blank' rel='noopener noreferrer'><Icon name='repository' /><span title={data.leethub_hook}>{data.leethub_hook}</span><Icon name='arrow' className='repository-arrow' /></a>
+        <div className='sync-control'><div><strong>Auto upload</strong></div>
           <label className='switch'><input type='checkbox' aria-label='Enable auto upload' checked={enabled} onChange={async event => {
             try { await browser.storage.local.set({ bjhEnable: event.target.checked }) }
             catch { setMessage('Could not save auto-upload setting.') }
@@ -48,12 +48,12 @@ const Popup: React.FC = () => {
       </section>
       <section className='progress-card'>
         <div className='section-top'><span className='eyebrow'>Your progress</span><span className='small-muted'>All time</span></div>
-        <div className='total'><strong>{problems.length}</strong><span>problems synced</span></div>
-        <div className='difficulty-grid'>{['Easy', 'Medium', 'Hard'].map(level => <div className={`difficulty ${level.toLowerCase()}`} key={level}><span>{level}</span><strong>{problems.filter(problem => problem.difficulty === level).length}</strong></div>)}</div>
+        <div className='progress-summary'><div className='total'><strong>{problems.length}</strong><span>problems synced</span></div>
+        <div className='difficulty-grid'>{['Easy', 'Medium', 'Hard'].map(level => <div className={`difficulty ${level.toLowerCase()}`} key={level}><span>{level}</span><strong>{problems.filter(problem => problem.difficulty === level).length}</strong></div>)}</div></div>
       </section>
       <section className='manual-card'>
-        <h2>Sync a submission</h2><p className='muted'>Add a solution you’ve already accepted.</p>
-        <label htmlFor='submission'>Upload an accepted submission</label>
+        <h2>Sync an accepted submission</h2>
+        <label className='visually-hidden' htmlFor='submission'>Upload an accepted submission</label>
         <input id='submission' placeholder='Submission ID or URL' value={submission} onChange={event => setSubmission(event.target.value)} />
         <button className='primary full-width' disabled={busy || !enabled || !submission.trim()} onClick={upload}>{busy ? 'Uploading…' : 'Upload submission'}<Icon name='arrow' /></button>
         {!enabled && <p className='field-hint'>Turn on auto upload to upload a submission.</p>}
