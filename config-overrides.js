@@ -3,7 +3,6 @@ const { override } = require('customize-cra')
 const overrideEntry = (config) => {
   config.entry = {
     main: './src/popup',
-    authorize: './src/scripts/authorize',
     background: './src/scripts/background',
     enable: './src/scripts/enable',
     github: './src/scripts/github',

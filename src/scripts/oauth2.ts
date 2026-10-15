@@ -1,42 +1,9 @@
-import { LocalAuth } from '../constants/LocalAuth'
-import { OAuth2 } from '../types/OAuth2'
+import { WELCOME_URL } from '../constants/Url'
 
-export const oAuth2: OAuth2 = {
-  KEY: '',
-  ACCESS_TOKEN_URL: '',
-  AUTHORIZATION_URL: '',
-  CLIENT_ID: '',
-  CLIENT_SECRET: '',
-  REDIRECT_URL: '',
-  SCOPES: [],
-
-  init() {
-    this.KEY = LocalAuth.KEY
-    this.ACCESS_TOKEN_URL = LocalAuth.ACCESS_TOKEN_URL
-    this.AUTHORIZATION_URL = LocalAuth.AUTHORIZATION_URL
-    this.CLIENT_ID = LocalAuth.CLIENT_ID
-    this.CLIENT_SECRET = LocalAuth.CLIENT_SECRET
-    this.REDIRECT_URL = LocalAuth.REDIRECT_URL
-    this.SCOPES = LocalAuth.SCOPES
-  },
-
-  /**
-   * Begin
-   */
+// Browser extensions cannot protect an OAuth client secret. Authenticate only
+// from an extension-owned page using a user-supplied repository-scoped token.
+export const oAuth2 = {
   begin() {
-    this.init()
-    let url: string = `${this.AUTHORIZATION_URL}?client_id=${this.CLIENT_ID}&redirect_uri=${this.REDIRECT_URL}&scope=`
-    this.SCOPES.forEach((scope) => {
-      url += scope
-    })
-
-    chrome.storage.local.set({ pipe_leethub: true }, () => {
-      chrome.tabs.create({ url, selected: true }, () => {
-        window.close()
-        chrome.tabs.getCurrent((tab: chrome.tabs.Tab | undefined) => {
-          // chrome.tabs.remove(tab?.id ?? 0, () => {});
-        })
-      })
-    })
+    chrome.tabs.create({ url: WELCOME_URL, selected: true })
   }
 }
