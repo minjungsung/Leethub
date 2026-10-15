@@ -1,10 +1,11 @@
+import { vi, type Mock } from 'vitest'
 import browser from 'webextension-polyfill'
 import { TextEncoder } from 'util'
 import { uploadOneSolveProblemOnGit, sourcePath, blobSha } from './uploadfunctions'
 import { LeetcodeData } from '../../types/LeetcodeData'
 import { createHash } from 'crypto'
 Object.assign(global, { TextEncoder })
-jest.mock('webextension-polyfill', () => ({ __esModule: true, default: { storage: { local: { get: jest.fn(), set: jest.fn() } } } }))
+vi.mock('webextension-polyfill', () => ({ __esModule: true, default: { storage: { local: { get: vi.fn(), set: vi.fn() } } } }))
 const sample: LeetcodeData = { submissionId: '123', problemId: '1', title: 'Two Sum', slug: 'two-sum',
   codeSnippet: 'return "안녕 😀";', description: '<p>Find numbers</p>', language: 'C++', difficulty: 'Easy', runtime: '1 ms', memory: '5 MB', timestamp: 100 }
 let configuration: Record<string, any>
@@ -17,10 +18,10 @@ let disableDuringBlob: boolean
 let heads: number
 beforeEach(() => {
   configuration = { leethub_token: 'fixture-token', leethub_hook: 'example/solutions', bjhEnable: true, leethub_OrgOption: 'platform', stats: { problems: {} } }
-  ;(browser.storage.local.get as jest.Mock).mockImplementation(async () => configuration)
-  ;(browser.storage.local.set as jest.Mock).mockReset()
+  ;(browser.storage.local.get as Mock).mockImplementation(async () => configuration)
+  ;(browser.storage.local.set as Mock).mockReset()
   requests = []; fail = undefined; conflicts = 0; identical = false; heads = 0; sourceExistsOnly = false; disableDuringBlob = false
-  global.fetch = jest.fn(async (input, init) => {
+  global.fetch = vi.fn(async (input, init) => {
     const url = String(input), method = init?.method || 'GET'
     const body = init?.body ? JSON.parse(init.body as string) : undefined
     requests.push({ url, method, body })
@@ -41,7 +42,7 @@ beforeEach(() => {
       else if (fail) { status = fail; data = { message: 'Denied' } }
     }
     return { ok: status < 400, status, json: async () => data } as Response
-  }) as jest.Mock
+  }) as Mock
 })
 test('uses UTF-8 byte length for Git blob hashing and preserves source bytes', async () => {
   const bytes = Buffer.from(sample.codeSnippet)
@@ -106,7 +107,7 @@ test('normalizes display languages and shares organization paths', () => {
 })
 
 test('rejects an empty repository with an actionable message', async () => {
-  ;(global.fetch as jest.Mock).mockImplementation(async (input) => ({
+  ;(global.fetch as Mock).mockImplementation(async (input) => ({
     ok: !String(input).includes('/git/ref/'), status: 409,
     json: async () => String(input).includes('/git/ref/') ? { message: 'Git Repository is empty.' } : { default_branch: 'main' }
   }))
