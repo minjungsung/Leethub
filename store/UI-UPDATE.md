@@ -10,6 +10,8 @@ See [live verification](../audit/LIVE-VERIFICATION.md) and [design references](D
 
 ## Rounded popup follow-up
 
-The popup has an 8px white inset around a 24px rounded panel and a thin scrollbar. The panel scrolls within 584px so the complete popup stays within Chrome's 600px height limit. Chrome controls the native window border. The setup page keeps its independent layout.
+The popup has a 4px white inset around a 12px rounded panel and a thin scrollbar. Content cards use 14px corners. The panel scrolls within 592px so the complete popup stays within Chrome's 600px height limit. Chrome controls the native window border. The setup page keeps its independent layout.
 
-The updated unpacked extension was reloaded in Chrome; the rendered panel had a 24px corner radius and no horizontal overflow. Type checking, all 45 existing tests, production packaging, and ZIP integrity checks passed. An authenticated accepted Python3 submission's 286 source bytes matched the GitHub solution exactly (SHA-256: `81e0e33c3eddf9dde2d7cbabbc9441dabf9e3693d9a14117342ca47039823dc6`). A repeated upload through the updated popup returned "This solution is already uploaded." and left the remote branch head unchanged.
+The updated unpacked extension was reloaded in Chrome; the rendered panel initially had a 24px corner radius and no horizontal overflow. Type checking, all 45 existing tests, production packaging, and ZIP integrity checks passed. An authenticated accepted Python3 submission's 286 source bytes matched the GitHub solution exactly (SHA-256: `81e0e33c3eddf9dde2d7cbabbc9441dabf9e3693d9a14117342ca47039823dc6`). A repeated upload through the updated popup returned "This solution is already uploaded." and left the remote branch head unchanged.
+
+The corner radius was subsequently reduced to 12px, card corners to 14px, and the outer inset to 4px for a more restrained appearance.
