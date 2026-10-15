@@ -16,19 +16,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        if: startsWith(matrix.project.ecosystem, 'python-')
-        with:
-          python-version: ${{ matrix.project.runtime-version }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        if: matrix.project.ecosystem == 'npm'
         with:
-          node-version: ${{ matrix.project.runtime-version }}
-      - uses: actions/setup-java@c5195efecf7bdfc987ee1f5aa9d5bd51a36585f2
-        if: matrix.project.ecosystem == 'gradle'
-        with:
-          distribution: temurin
-          java-version: ${{ matrix.project.runtime-version }}
+          node-version: '20'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: minjungsung/.github
