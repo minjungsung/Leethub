@@ -3,7 +3,7 @@ import Popup from '../../components/Popup'
 
 const App: React.FC = () => {
   return (
-    <div>
+    <div className='popup-window'>
       <Popup />
     </div>
   )

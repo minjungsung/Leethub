@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import browser from 'webextension-polyfill'
+import Icon from './Icon'
 import { githubRequest } from '../scripts/github'
 import { createRepo, linkRepo } from '../scripts/welcome'
 
@@ -56,13 +57,13 @@ const Welcome: React.FC = () => {
   }
   return <main className='welcome'>
     <aside className='welcome-story'>
-      <div className='brand'><span className='brand-mark' aria-hidden='true'>&lt;/&gt;</span><strong>LeetHub</strong></div>
-      <div className='story-content'><span className='eyebrow'>SMALL WINS. LASTING PROGRESS.</span><h1>Your practice,<br />in one place.</h1><p>Turn accepted solutions into a collection you can come back to. Pick a repository. We’ll take it from there.</p>
-        <div className='flow-preview' aria-hidden='true'><div className='flow-source'><span>&lt;/&gt;</span>Accepted</div><span className='flow-arrow'>→</span><div className='flow-destination'><span>⌘</span>Your repository</div></div>
+      <div className='brand'><span className='brand-mark'><Icon name='code' /></span><strong>LeetHub</strong></div>
+      <div className='story-content'><span className='eyebrow'>Made for your next breakthrough</span><h1>Your code.<br />Beautifully kept.</h1><p>Your accepted solutions deserve a place of their own. Connect GitHub and keep your progress, one problem at a time.</p>
+        <div className='flow-preview' aria-hidden='true'><div className='flow-source'><Icon name='code' />Accepted</div><Icon name='arrow' className='flow-arrow' /><div className='flow-destination'><Icon name='repository' />Your repository</div></div>
       </div><span className='story-footnote'>Built for LeetCode. Stored on GitHub.</span>
     </aside>
     <div className='setup-panel'>
-      <header className='setup-header'><span className='eyebrow'>LET’S GET YOU CONNECTED</span><h2>LeetHub setup</h2><p className='muted'>Two steps. Then back to solving.</p></header>
+      <header className='setup-header'><span className='eyebrow'>Make yourself at home</span><h2>LeetHub setup</h2><p className='muted'>Two steps. Then back to solving.</p></header>
       <section className='setup-step'>
         <div className='step-heading'><span className={`step-number ${connected ? 'complete' : ''}`}>{connected ? '✓' : '1'}</span><div><h3>Connect GitHub</h3><p>{connected ? 'Connected. You can replace your token here.' : 'Give your solutions a place to land.'}</p></div>{connected && <span className='status-badge active'>Connected</span>}</div>
         <label htmlFor='access-token'>Repository-scoped GitHub token</label>
@@ -76,10 +77,10 @@ const Welcome: React.FC = () => {
           <div><label htmlFor='organization'>Organize solutions</label><select id='organization' value={orgOption} onChange={event => setOrgOption(event.target.value)}><option value='platform'>Organize by Platform</option><option value='language'>Organize by Language</option></select></div></div>
         <label htmlFor='repository'>Repository</label><input id='repository' placeholder='Repository Name or owner/repository' value={repository} onChange={event => setRepository(event.target.value)} />
         <p className='field-hint'>{repOption === 'new' ? 'Creating a repository requires additional GitHub permission. Linking an existing initialized repository is recommended.' : 'Use a repository with a README and write access.'}</p>
-        <button className='primary full-width' disabled={busy || !repository.trim() || !repOption} onClick={connectRepository}>Get Started<span aria-hidden='true'>→</span></button>
+        <button className='primary full-width' disabled={busy || !repository.trim() || !repOption} onClick={connectRepository}>Get Started<Icon name='arrow' /></button>
       </section>
       <p className={`feedback ${message ? 'visible' : ''}`} role='status'>{message}</p>
-      <div className='setup-footer'><span>Your token stays in this browser’s extension storage.</span><button className='text-button' disabled={busy} onClick={unlink}>Unlink repository</button></div>
+      <div className='setup-footer'><span><Icon name='lock' />Your token stays in this browser.</span><button className='text-button' disabled={busy} onClick={unlink}>Unlink repository</button></div>
     </div>
   </main>
 }

@@ -1,7 +1,15 @@
 # Version 1.0.6 UI update
 
-The popup and setup page use white surfaces, charcoal text, restrained blue accents, and compact spacing. Repository status, automatic upload, synchronized-problem counts, and manual upload have distinct sections. Setup presents GitHub authentication and repository selection as two steps.
+The popup and setup page use Apple-inspired system typography, opaque white grouped content, cool gray backgrounds, rounded blue action buttons, and custom SVG icons. Subtle material effects are reserved for controls and decorative setup elements. Accessibility preferences have reduced-motion, reduced-transparency, and contrast fallbacks. The popup scrolls within Chrome's 600-pixel height limit when feedback is visible.
 
-The update retains the existing upload behavior and storage. Version 1.0.6 uses refreshed icons and store screenshots.
+GitHub connection and repository selection remain two explicit steps. Connected users can pause automatic uploads, view repository-scoped statistics, upload an older accepted submission, and open the latest solution.
 
-Validation: type checking, 45 automated tests, production build, and unpacked Chrome smoke tests passed. Real-browser GitHub authentication and private test repository linking succeeded. LeetCode is currently logged out in the user's browser, so a genuine accepted-submission upload remains pending login. The update must not be described as fully validated end to end until that check passes.
+Type checking, 45 automated tests, production build, and isolated unpacked Chrome smoke tests passed. Signed-in Chrome verification confirmed GitHub connection, private repository linking, an accepted Python3 Two Sum upload, exact source preservation, README creation, repeated-upload deduplication, and automatic detection of a second accepted submission without clicking the popup upload button. Pausing disabled manual upload; re-enabling restored it. These live checks cover the tested Python3 path, not every language, token expiration, branch protection, or concurrent remote client.
+
+See [live verification](../audit/LIVE-VERIFICATION.md) and [design references](DESIGN-REFERENCES.md).
+
+## Rounded popup follow-up
+
+The popup has an 8px white inset around a 24px rounded panel and a thin scrollbar. The panel scrolls within 584px so the complete popup stays within Chrome's 600px height limit. Chrome controls the native window border. The setup page keeps its independent layout.
+
+The updated unpacked extension was reloaded in Chrome; the rendered panel had a 24px corner radius and no horizontal overflow. Type checking, all 45 existing tests, production packaging, and ZIP integrity checks passed. An authenticated accepted Python3 submission's 286 source bytes matched the GitHub solution exactly (SHA-256: `81e0e33c3eddf9dde2d7cbabbc9441dabf9e3693d9a14117342ca47039823dc6`). A repeated upload through the updated popup returned "This solution is already uploaded." and left the remote branch head unchanged.

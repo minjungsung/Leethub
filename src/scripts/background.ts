@@ -38,7 +38,7 @@ chrome.webRequest.onCompleted.addListener(details => {
   if (details.tabId < 0 || details.statusCode !== 200) return
   const id = new URL(details.url).pathname.match(/^\/submissions\/(?:detail\/)?(\d+)\/check\/?$/)?.[1]
   if (id) void enqueueSubmission(id).catch(reportError)
-}, { urls: ['https://leetcode.com/submissions/*/check/'] })
+}, { urls: ['https://leetcode.com/submissions/*/check/', 'https://leetcode.com/submissions/detail/*/check/'] })
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id || !sender.url) return false

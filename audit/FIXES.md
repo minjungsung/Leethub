@@ -26,8 +26,8 @@ The fixes were developed on `fix/reliable-submission-sync` against the audited s
 
 The tests cover rejected authentication, setup errors, accepted source extraction, missing/nonaccepted submissions, Unicode blob encoding, failed uploads, remote duplicates, missing README repair, conflict retries, disabled integration, migration preservation, cross-tab queueing, sender validation, safe status responses, popup navigation, and statistics.
 
-## Remaining external verification
+## Live verification
 
-A genuine signed-in LeetCode accepted submission and a disposable GitHub repository were not available for live upload testing. The private GraphQL schema and submission-check URL are external dependencies. Verify a real accepted upload, exact source bytes, token permissions, and branch protection in a signed-in browser before publishing. Live remote branches and releases were not changed.
+Signed-in Chrome verification subsequently confirmed actual accepted-submission upload, source preservation, automatic detection, and duplicate suppression. See [LIVE-VERIFICATION.md](LIVE-VERIFICATION.md) for evidence and scope. Source fixes have been integrated into main. The original baseline audit is historical.
 
 Install locally by loading `build` through `chrome://extensions` in Developer mode, then connecting an initialized repository from the popup. The ZIP can be extracted and loaded the same way.
