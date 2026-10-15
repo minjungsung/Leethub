@@ -12,14 +12,83 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  release:
+  verify-release:
+    permissions:
+      contents: read
+      checks: read
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require reviewed main ancestry and exact gate evidence
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main
+          release_sha=$(git rev-parse HEAD)
+          gh api --paginate "repos/$REPOSITORY/commits/$release_sha/check-runs?filter=latest&per_page=100" --slurp > checks.json
+          python3 - <<'PY'
+          import json
+          import subprocess
+          sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          runs = [run for page in json.load(open("checks.json")) for run in page["check_runs"] if run["name"] == "dependency-gate"]
+          if len(runs) != 1:
+              raise SystemExit("release requires exactly one dependency gate")
+          run = runs[0]
+          app = run.get("app", {})
+          if run.get("head_sha") != sha or run.get("status") != "completed" or run.get("conclusion") != "success" or app.get("slug") != "github-actions" or app.get("owner", {}).get("login") != "github" or type(app.get("id")) is not int or app["id"] <= 0:
+              raise SystemExit("release requires a successful trusted gate on its exact commit")
+          PY
+      - name: Check out verified policy tooling
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: minjungsung/.github
+          ref: 53eef31813cadd2611ade5062449c5089bbe1774
+          path: .release-policy-source
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Strictly validate the exact release application commit
+        env:
+          PROJECTS_JSON: '[{"name":"root-node","ecosystem":"npm","path":".","runtime-version":"20","manifest":"package.json","lockfile":"package-lock.json","timeout-minutes":15}]'
+          CI: 'true'
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          environment = dict(os.environ, PYTHONPATH=".release-policy-source/dependency-policy")
+          for project in json.loads(os.environ["PROJECTS_JSON"]):
+              subprocess.run([sys.executable, ".release-policy-source/dependency-policy/scripts/run_project.py",
+                              "--project-json", json.dumps(project), "--repository-root", os.environ["GITHUB_WORKSPACE"]],
+                             env=environment, check=True)
+          PY
+      - name: Install checksum-verified actionlint
+        run: bash .release-policy-source/dependency-policy/scripts/install_actionlint.sh
+      - name: Validate exact release workflows
+        run: actionlint .github/workflows/*.yml
+
+  release:
+    needs: verify-release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Determine version
@@ -31,6 +100,8 @@ jobs:
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             VERSION="$INPUT_VERSION"
+            git check-ref-format "refs/tags/$VERSION"
+            if [[ "$VERSION" != v* ]]; then exit 1; fi
             git config user.name "github-actions"
             git config user.email "github-actions@github.com"
             git tag -a "$VERSION" -m "Release $VERSION"
@@ -45,22 +116,30 @@ jobs:
           CURR_TAG: ${{ steps.version.outputs.tag }}
           REPO: ${{ github.repository }}
         run: |
-          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${CURR_TAG}$" | head -1)
+          PREV_TAG=$(python3 - <<'PY'
+          import os
+          import subprocess
+          tags = subprocess.check_output(["git", "tag", "--sort=-version:refname"], text=True).splitlines()
+          print(next((tag for tag in tags if tag != os.environ["CURR_TAG"]), ""))
+          PY
+          )
           if [ -z "$PREV_TAG" ]; then
             CHANGES=$(git log --pretty=format:"- %s (%h)" HEAD)
           else
-            CHANGES=$(git log --pretty=format:"- %s (%h)" ${PREV_TAG}..${CURR_TAG})
+            CHANGES=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG..$CURR_TAG")
           fi
-          echo "## What's Changed" > changelog.md
-          echo "" >> changelog.md
-          echo "$CHANGES" >> changelog.md
-          echo "" >> changelog.md
-          if [ -n "$PREV_TAG" ]; then
-            echo "**Full Changelog**: https://github.com/${REPO}/compare/${PREV_TAG}...${CURR_TAG}" >> changelog.md
-          fi
+          {
+            echo "## What's Changed"
+            echo ""
+            echo "$CHANGES"
+            echo ""
+            if [ -n "$PREV_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${REPO}/compare/${PREV_TAG}...${CURR_TAG}"
+            fi
+          } > changelog.md
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           body_path: changelog.md
