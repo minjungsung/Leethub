@@ -7,16 +7,23 @@ on:
 concurrency:
   group: publish-wiki
   cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
+  verify-publication:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/strict-wiki-validation.yml
   publish:
+    needs: verify-publication
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
       - name: Publish wiki
-        continue-on-error: true
-        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        uses: Andrew-Chen-Wang/github-wiki-action@50650fccf3a10f741995523cf9708c53cec8912a
         with:
           strategy: init
           path: wiki
