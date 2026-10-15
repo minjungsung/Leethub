@@ -55,7 +55,7 @@ jobs:
           ref: 53eef31813cadd2611ade5062449c5089bbe1774
           path: .release-policy-source
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: '20'
       - name: Strictly validate the exact release application commit

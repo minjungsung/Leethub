@@ -23,7 +23,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
       - name: Publish wiki
-        uses: Andrew-Chen-Wang/github-wiki-action@50650fccf3a10f741995523cf9708c53cec8912a
+        uses: Andrew-Chen-Wang/github-wiki-action@1bbb4280446f9630e8e21a18012cbacf3b0f992e
         with:
           strategy: init
           path: wiki
