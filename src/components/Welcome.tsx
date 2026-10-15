@@ -10,8 +10,10 @@ const Welcome: React.FC = () => {
   const [repository, setRepository] = useState('')
   const [repOption, setRepOption] = useState('')
   const [orgOption, setOrgOption] = useState('platform')
+  const [connected, setConnected] = useState(false)
   useEffect(() => {
-    void browser.storage.local.get(['leethub_hook', 'leethub_OrgOption']).then(data => {
+    void browser.storage.local.get(['leethub_hook', 'leethub_OrgOption', 'leethub_token']).then(data => {
+      setConnected(typeof data.leethub_token === 'string' && !!data.leethub_token)
       setRepository(typeof data.leethub_hook === 'string' ? data.leethub_hook : '')
       setOrgOption(data.leethub_OrgOption === 'language' ? 'language' : 'platform')
     })
@@ -26,6 +28,7 @@ const Welcome: React.FC = () => {
       // Pause uploads and clear the previous account binding when replacing credentials.
       await browser.storage.local.set({ leethub_token: token, leethub_username: user.login,
         leethub_hook: null, mode_type: 'hook', bjhEnable: false, lastError: null, lastUpload: null })
+      setConnected(true)
       setAccessToken('')
       setMessage('GitHub connected. Select your repository below.')
     } catch (error) {
@@ -52,27 +55,32 @@ const Welcome: React.FC = () => {
     setMessage('Repository unlinked. Select another repository to resume uploads.')
   }
   return <main className='welcome'>
-    <h1>LeetHub setup</h1>
-    <p>Sync accepted LeetCode submissions to GitHub.</p>
-    <label htmlFor='access-token'>Repository-scoped GitHub token</label>
-    <input id='access-token' type='password' autoComplete='off' value={accessToken} onChange={event => setAccessToken(event.target.value)} />
-    <p>Use a fine-grained token with Contents read and write for your selected repository and an expiration date.</p>
-    <button disabled={busy} onClick={authenticate}>Connect GitHub</button>
-    <label htmlFor='type'>Repository action</label>
-    <select id='type' value={repOption} onChange={event => setRepOption(event.target.value)}>
-      <option value=''>Pick an Option</option><option value='link'>Link an Existing Repository</option>
-      <option value='new'>Create a new Private Repository</option>
-    </select>
-    {repOption === 'new' && <p>Creating a repository requires additional GitHub permission. Linking an existing initialized repository is recommended.</p>}
-    <label htmlFor='repository'>Repository</label>
-    <input id='repository' placeholder='Repository Name or owner/repository' value={repository} onChange={event => setRepository(event.target.value)} />
-    <label htmlFor='organization'>Organize solutions</label>
-    <select id='organization' value={orgOption} onChange={event => setOrgOption(event.target.value)}>
-      <option value='platform'>Organize by Platform</option><option value='language'>Organize by Language</option>
-    </select>
-    <button disabled={busy || !repository.trim() || !repOption} onClick={connectRepository}>Get Started</button>
-    <button disabled={busy} onClick={unlink}>Unlink repository</button>
-    <p role='status'>{message}</p>
+    <aside className='welcome-story'>
+      <div className='brand'><span className='brand-mark' aria-hidden='true'>&lt;/&gt;</span><strong>LeetHub</strong></div>
+      <div className='story-content'><span className='eyebrow'>SMALL WINS. LASTING PROGRESS.</span><h1>Your practice,<br />in one place.</h1><p>Turn accepted solutions into a collection you can come back to. Pick a repository. We’ll take it from there.</p>
+        <div className='flow-preview' aria-hidden='true'><div className='flow-source'><span>&lt;/&gt;</span>Accepted</div><span className='flow-arrow'>→</span><div className='flow-destination'><span>⌘</span>Your repository</div></div>
+      </div><span className='story-footnote'>Built for LeetCode. Stored on GitHub.</span>
+    </aside>
+    <div className='setup-panel'>
+      <header className='setup-header'><span className='eyebrow'>LET’S GET YOU CONNECTED</span><h2>LeetHub setup</h2><p className='muted'>Two steps. Then back to solving.</p></header>
+      <section className='setup-step'>
+        <div className='step-heading'><span className={`step-number ${connected ? 'complete' : ''}`}>{connected ? '✓' : '1'}</span><div><h3>Connect GitHub</h3><p>{connected ? 'Connected. You can replace your token here.' : 'Give your solutions a place to land.'}</p></div>{connected && <span className='status-badge active'>Connected</span>}</div>
+        <label htmlFor='access-token'>Repository-scoped GitHub token</label>
+        <input id='access-token' type='password' autoComplete='off' placeholder='Paste your GitHub token' value={accessToken} onChange={event => setAccessToken(event.target.value)} />
+        <p className='field-hint'>Choose one repository, allow Contents read and write, and set an expiration date.</p>
+        <div className='auth-actions'><button className='secondary' disabled={busy} onClick={authenticate}>Connect GitHub</button><a href='https://github.com/settings/personal-access-tokens/new' target='_blank' rel='noopener noreferrer'>Create a token ↗</a></div>
+      </section>
+      <section className='setup-step'>
+        <div className='step-heading'><span className='step-number'>2</span><div><h3>Choose your repository</h3><p>Keep all your accepted solutions together.</p></div></div>
+        <div className='setup-fields'><div><label htmlFor='type'>Repository action</label><select id='type' value={repOption} onChange={event => setRepOption(event.target.value)}><option value=''>Pick an Option</option><option value='link'>Link an Existing Repository</option><option value='new'>Create a new Private Repository</option></select></div>
+          <div><label htmlFor='organization'>Organize solutions</label><select id='organization' value={orgOption} onChange={event => setOrgOption(event.target.value)}><option value='platform'>Organize by Platform</option><option value='language'>Organize by Language</option></select></div></div>
+        <label htmlFor='repository'>Repository</label><input id='repository' placeholder='Repository Name or owner/repository' value={repository} onChange={event => setRepository(event.target.value)} />
+        <p className='field-hint'>{repOption === 'new' ? 'Creating a repository requires additional GitHub permission. Linking an existing initialized repository is recommended.' : 'Use a repository with a README and write access.'}</p>
+        <button className='primary full-width' disabled={busy || !repository.trim() || !repOption} onClick={connectRepository}>Get Started<span aria-hidden='true'>→</span></button>
+      </section>
+      <p className={`feedback ${message ? 'visible' : ''}`} role='status'>{message}</p>
+      <div className='setup-footer'><span>Your token stays in this browser’s extension storage.</span><button className='text-button' disabled={busy} onClick={unlink}>Unlink repository</button></div>
+    </div>
   </main>
 }
 export default Welcome

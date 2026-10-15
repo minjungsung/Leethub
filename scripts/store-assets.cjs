@@ -39,11 +39,11 @@ async function main() {
     fs.mkdirSync(path.join(root, 'store/assets'), { recursive: true })
     // Generate square raster icons with canvas; no source material or personal metadata.
     for (const size of [16, 48, 128]) {
-      const data = await evaluate(`(()=>{const c=document.createElement('canvas');c.width=c.height=${size};const x=c.getContext('2d');x.fillStyle='#0f172a';x.fillRect(0,0,${size},${size});x.fillStyle='#ffaa41';x.font='bold ${Math.round(size * 0.43)}px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText('LH',${size / 2},${size / 2});return c.toDataURL('image/png').split(',')[1]})()`)
+      const data = await evaluate(`(()=>{const c=document.createElement('canvas');c.width=c.height=${size};const x=c.getContext('2d');x.fillStyle='#2563eb';x.fillRect(0,0,${size},${size});x.fillStyle='#ffffff';x.font='bold ${Math.round(size * 0.43)}px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText('LH',${size / 2},${size / 2});return c.toDataURL('image/png').split(',')[1]})()`)
       fs.writeFileSync(path.join(root, `public/assets/icon-${size}.png`), Buffer.from(data, 'base64'))
     }
     fs.copyFileSync(path.join(root, 'public/assets/icon-128.png'), path.join(root, 'store/assets/icon-128.png'))
-    const tile = await evaluate("(()=>{const c=document.createElement('canvas');c.width=440;c.height=280;const x=c.getContext('2d');x.fillStyle='#0f172a';x.fillRect(0,0,440,280);x.fillStyle='#ffaa41';x.font='bold 54px Arial';x.fillText('LeetHub',30,110);x.fillStyle='white';x.font='23px Arial';x.fillText('Accepted solutions',30,170);x.fillText('LeetCode to GitHub',30,208);return c.toDataURL('image/png').split(',')[1]})()")
+    const tile = await evaluate("(()=>{const c=document.createElement('canvas');c.width=440;c.height=280;const x=c.getContext('2d');x.fillStyle='#2563eb';x.fillRect(0,0,440,280);x.fillStyle='#ffffff';x.font='bold 54px Arial';x.fillText('LeetHub',30,110);x.fillStyle='white';x.font='23px Arial';x.fillText('Accepted solutions',30,170);x.fillText('LeetCode to GitHub',30,208);return c.toDataURL('image/png').split(',')[1]})()")
     fs.writeFileSync(path.join(root, 'store/assets/promo-440x280.png'), Buffer.from(tile, 'base64'))
     // Fictional local demonstration data: no live account, token, submission or API write.
     await evaluate("chrome.storage.local.set({leethub_hook:'example/solutions',bjhEnable:true,stats:{problems:{'example/solutions/1':{difficulty:'Easy'},'example/solutions/2':{difficulty:'Medium'}}}})")

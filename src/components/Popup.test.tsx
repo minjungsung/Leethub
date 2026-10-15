@@ -19,8 +19,11 @@ test('links to GitHub and displays repository-scoped counts', async () => {
   render(<Popup />)
   const link = await screen.findByRole('link', { name: 'example/solutions' })
   expect(link.getAttribute('href')).toBe('https://github.com/example/solutions')
-  expect(screen.getByText('Synced problems: 1')).toBeTruthy()
-  expect(screen.getByText('Easy: 1 · Medium: 0 · Hard: 0')).toBeTruthy()
+  expect(screen.getByText('problems synced')).toBeTruthy()
+  expect(screen.getAllByText('1')).toHaveLength(2)
+  expect(screen.getByText('Easy')).toBeTruthy()
+  expect(screen.getByText('Medium')).toBeTruthy()
+  expect(screen.getByText('Hard')).toBeTruthy()
 })
 test('reacts to authentication-only changes and unregisters on unmount', async () => {
   const view = render(<Popup />)
