@@ -13,11 +13,11 @@ jobs:
   validate-dependencies:
     permissions:
       contents: read
-    uses: minjungsung/.github/.github/workflows/dependency-validation.yml@53eef31813cadd2611ade5062449c5089bbe1774
+    uses: minjungsung/.github/.github/workflows/dependency-validation.yml@912a4df6333443b9f8a012275627d971a8218a03
     with:
       pr-author: ${{ github.event.pull_request.user.login || 'policy-push' }}
       projects-json: '[{"name":"root-node","ecosystem":"npm","path":".","runtime-version":"20","manifest":"package.json","lockfile":"package-lock.json","timeout-minutes":15}]'
-      policy-ref: 53eef31813cadd2611ade5062449c5089bbe1774
+      policy-ref: 912a4df6333443b9f8a012275627d971a8218a03
 
   dependency-gate:
     name: dependency-gate
@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: Fetch Dependabot metadata
         id: dependabot-metadata
-        uses: dependabot/fetch-metadata@08eff52bf64351f401fb50d4972fa95b9f2c2d1b
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Approve and enable auto-merge
