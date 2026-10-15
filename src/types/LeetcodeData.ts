@@ -1,8 +1,13 @@
 export interface LeetcodeData {
+  submissionId: string
+  problemId: string
   title: string
+  slug: string
   description: string
-  constraints: string[]
-  codeSnippet: string // Assuming there's a way to identify the code snippet
-  language: string // Assuming there's a way to identify the language
-  link: string
+  codeSnippet: string
+  language: string
+  difficulty: string
+  runtime: string
+  memory: string
+  timestamp: number
 }

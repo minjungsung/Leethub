@@ -1,157 +1,51 @@
-import '../css/popup.css'
-
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import browser from 'webextension-polyfill'
-import { oAuth2 } from '../scripts/oauth2'
 import { WELCOME_URL } from '../constants/Url'
-import { getStats, getHook, getIsEnabled, saveIsEnabled } from '../scripts/storage';
+import { Stats } from '../types/Stats'
+import { emptyStats } from '../scripts/storage'
 
 const Popup: React.FC = () => {
-  const [mode, setMode] = useState<'auth' | 'hook' | 'commit'>('auth')
-  const [leethubHook, setLeethubHook] = useState<string>(WELCOME_URL)
-  const [, setStats] = useState({ solved: 0, easy: 0, medium: 0, hard: 0 })
-  const [isEnabled, setIsEnabledState] = useState<boolean>(false); // Renamed state setter for clarity
-
-  const updateComponentState = useCallback(async () => {
-    const currentStatsData = await getStats(); // Use exported function
-    const hook = await getHook();       // Use exported function
-    const enabled = await getIsEnabled(); // Use new exported function
-
-    // Extract difficulty counts from stats.problems or default to 0
-    const solvedCount = currentStatsData?.problems ? Object.keys(currentStatsData.problems).length : 0;
-    const easyCount = currentStatsData?.problems ? Object.values(currentStatsData.problems).filter((p: any) => p.difficulty === 'Easy').length : 0;
-    const mediumCount = currentStatsData?.problems ? Object.values(currentStatsData.problems).filter((p: any) => p.difficulty === 'Medium').length : 0;
-    const hardCount = currentStatsData?.problems ? Object.values(currentStatsData.problems).filter((p: any) => p.difficulty === 'Hard').length : 0;
-
-    setStats({
-      solved: solvedCount,
-      easy: easyCount,
-      medium: mediumCount,
-      hard: hardCount
-    });
-
-    if (hook) {
-      setLeethubHook(hook);
-    }
-    setIsEnabledState(enabled);
-  }, []);
-
+  const [data, setData] = useState<Record<string, any>>({})
+  const [submission, setSubmission] = useState('')
+  const [message, setMessage] = useState('')
+  const [busy, setBusy] = useState(false)
   useEffect(() => {
-    browser.storage.local
-      .get(['leethub_token', 'mode_type', 'leethub_hook']) // No need to get bjhEnable here directly
-      .then(async (data: Record<string, any>) => {
-        const { leethub_token, leethub_hook } = data;
-        // Fetch enabled status using the new function
-        const enabledStatus = await getIsEnabled();
-        setIsEnabledState(enabledStatus);
-
-        if (!leethub_token) {
-          setMode('auth')
-        } else if (leethub_token && !leethub_hook) {
-          setMode('hook')
-          setLeethubHook(WELCOME_URL); // Ensure hook is reset if not present
-        } else {
-          setMode('commit')
-          setLeethubHook(leethub_hook); // Set the hook URL
-          updateComponentState(); // Fetch stats and enabled status
-        }
-      });
-
-    // Add listener for storage changes
-    const handleStorageChange = (changes: Record<string, browser.Storage.StorageChange>, areaName: string) => {
-      if (areaName === 'local' && (changes.stats || changes.leethub_hook || changes.bjhEnable)) {
-        console.log('Storage changed, updating popup state:', changes);
-        updateComponentState(); // Re-fetch stats, hook, and enabled status on change
-        // Update mode based on token/hook availability after potential auth changes
-        browser.storage.local.get(['leethub_token', 'leethub_hook']).then(d => {
-          if (!d.leethub_token) setMode('auth');
-          else if (!d.leethub_hook) setMode('hook');
-          else setMode('commit');
-        });
-      }
-    };
-
-    browser.storage.onChanged.addListener(handleStorageChange);
-
-    // Cleanup listener on unmount
-    return () => {
-      browser.storage.onChanged.removeListener(handleStorageChange);
-    };
-  }, [updateComponentState])
-
-  const authenticate = () => {
-    oAuth2.begin()
-  }
-
-  // Handler for the toggle switch
-  const handleToggleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = event.target.checked;
-    setIsEnabledState(checked);
+    const refresh = () => { void browser.storage.local.get(null).then(setData) }
+    const change = (_changes: unknown, area: string) => { if (area === 'local') refresh() }
+    refresh(); browser.storage.onChanged.addListener(change)
+    return () => browser.storage.onChanged.removeListener(change)
+  }, [])
+  const stats: Stats = data.stats ?? emptyStats()
+  const problems = Object.entries(stats.problems ?? {}).filter(([key]) => key.startsWith(`${data.leethub_hook}/`)).map(([, value]) => value)
+  const upload = async () => {
+    const id = submission.trim().match(/^(?:https:\/\/leetcode\.com\/(?:problems\/[^/]+\/)?submissions\/(?:detail\/)?)?(\d+)\/?$/)?.[1]
+    if (!id) { setMessage('Enter a LeetCode submission ID or detail URL.'); return }
+    setBusy(true); setMessage('Checking accepted submission and uploading…')
     try {
-      await saveIsEnabled(checked); // Use new exported function
-      console.log('bjhEnable saved:', checked);
-    } catch (error) {
-      console.error('Error saving bjhEnable:', error);
-    }
-  };
-
-  return (
-    <div className='ui grid container'>
-      <div className='sixteen wide center aligned column'>
-        <h1 id='title'>
-          Leet<span style={{ color: '#f18500' }}>Hub</span>
-        </h1>
-        <p id='caption'>Sync your code from LeetCode to GitHub</p>
-        <br />
-        {mode === 'auth' && (
-          <div id='auth_mode'>
-            <button
-              className='ui secondary button'
-              onClick={authenticate}
-            >
-              <i className='icon github'></i> Authenticate
-            </button>
-          </div>
-        )}
-        {mode === 'hook' && (
-          <div id='hook_mode'>
-            <a
-              className='ui secondary button'
-              href={leethubHook || WELCOME_URL} // Use state or default
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              <i className='icon github'></i> Set up Hook
-            </a>
-          </div>
-        )}
-        {mode === 'commit' && (
-          <div id='commit_mode'>
-            <p>
-              Repository:{' '}
-              <a
-                href={leethubHook || '#'} // Use state or placeholder
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                {leethubHook || 'Not Set'}
-              </a>
-            </p>
-            <div className="ui toggle checkbox">
-              <input
-                type="checkbox"
-                name="enableIntegration"
-                checked={isEnabled} // Use the state variable
-                onChange={handleToggleChange}
-              />
-              <label>Enable LeetCode/Programmers Auto Upload</label>
-            </div>
-            {/* Display more stats as needed */}
-          </div>
-        )}
-      </div>
-    </div>
-  )
+      const result = await browser.runtime.sendMessage({ task: 'uploadSubmission', submissionId: id }) as { error?: string; skipped?: boolean; duplicate?: boolean }
+      if (result.error) throw new Error(result.error)
+      setMessage(result.skipped ? 'Upload skipped. Enable auto upload and use an accepted submission.' : result.duplicate ? 'This solution is already uploaded.' : 'Solution uploaded.')
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Upload failed') }
+    finally { setBusy(false) }
+  }
+  return <main className='popup'>
+    <h1>LeetHub</h1><p>Accepted LeetCode solutions → GitHub</p>
+    <a href={WELCOME_URL} target='_blank' rel='noopener noreferrer'>{data.leethub_token ? 'Repository settings / reconnect' : 'Connect GitHub'}</a>
+    {data.leethub_hook && <>
+      <p>Repository: <a href={`https://github.com/${data.leethub_hook}`} target='_blank' rel='noopener noreferrer'>{data.leethub_hook}</a></p>
+      <label><input type='checkbox' checked={data.bjhEnable === true} onChange={async event => {
+        try { await browser.storage.local.set({ bjhEnable: event.target.checked }) }
+        catch { setMessage('Could not save auto-upload setting.') }
+      }} /> Enable auto upload</label>
+      <p>Synced problems: {problems.length}</p>
+      <p>{['Easy', 'Medium', 'Hard'].map(level => `${level}: ${problems.filter(problem => problem.difficulty === level).length}`).join(' · ')}</p>
+      <label htmlFor='submission'>Upload an accepted submission</label>
+      <input id='submission' placeholder='Submission ID or URL' value={submission} onChange={event => setSubmission(event.target.value)} />
+      <button disabled={busy || data.bjhEnable !== true} onClick={upload}>Upload submission</button>
+      {data.lastUpload && <p><a href={data.lastUpload.url} target='_blank' rel='noopener noreferrer'>View latest solution</a></p>}
+    </>}
+    {data.lastError && <p role='alert'>{data.lastError}</p>}
+    <p role='status'>{message}</p>
+  </main>
 }
-
 export default Popup

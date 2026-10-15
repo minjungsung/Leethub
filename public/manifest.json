@@ -2,18 +2,20 @@
   "manifest_version": 3,
   "name": "LeetHub",
   "short_name": "LeetHub",
-  "description": "Automatically integrate your Leetcode & GeeksforGeeks submissions to GitHub",
-  "homepage_url": "https://github.com/minjungsung/leethub",
-  "version": "1.0.4",
-  "author": "Minjung Sung",
+  "description": "Sync accepted LeetCode submissions to a selected GitHub repository.",
+  "version": "1.0.5",
   "action": {
-    "default_icon": "assets/thumbnail.png",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    },
     "default_popup": "index.html"
   },
   "icons": {
-    "16": "assets/thumbnail.png",
-    "48": "assets/thumbnail.png",
-    "128": "assets/thumbnail.png"
+    "16": "assets/icon-16.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
   },
   "background": {
     "service_worker": "background.js"
@@ -21,59 +23,23 @@
   "content_scripts": [
     {
       "matches": [
-        "https://leetcode.com/*",
-        "https://practice.geeksforgeeks.org/*",
-        "https://www.acmicpc.net/*",
-        "https://school.programmers.co.kr/*",
-        "https://swexpertacademy.com/*",
-        "https://level.goorm.io/*"
+        "https://leetcode.com/*"
       ],
-      "css": [],
       "js": [
-        "toast.js",
-        "util.js",
-        "github.js",
-        "storage.js",
-        "enable.js",
-        "leetcode/variables.js",
-        "leetcode/util.js",
-        "leetcode/parsing.js",
-        "leetcode/programmers.js",
-        "leetcode/uploadfunctions.js"
+        "content.js"
       ],
-      "exclude_matches": [],
-      "include_globs": [],
-      "exclude_globs": [],
-      "all_frames": false,
-      "match_origin_as_fallback": false,
-      "match_about_blank": false,
-      "run_at": "document_idle",
-      "world": "ISOLATED"
+      "run_at": "document_idle"
     }
   ],
   "permissions": [
-    "unlimitedStorage",
-    "storage"
+    "storage",
+    "webRequest"
   ],
   "host_permissions": [
     "https://leetcode.com/*",
-    "https://github.com/*",
-    "https://practice.geeksforgeeks.org/*",
-    "https://www.acmicpc.net/",
-    "https://school.programmers.co.kr/",
-    "https://swexpertacademy.com/",
-    "https://solved.ac/api/v3/*",
-    "https://level.goorm.io/"
+    "https://api.github.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [],
-      "matches": [
-        "<all_urls>"
-      ]
-    }
-  ]
+  }
 }

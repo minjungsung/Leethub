@@ -1,0 +1,12 @@
+const fs = require('node:fs')
+const path = require('node:path')
+const { spawnSync } = require('node:child_process')
+const root = path.resolve(__dirname, '..')
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'build/manifest.json')))
+const output = path.join(root, 'artifacts', `leethub-${manifest.version}.zip`)
+fs.mkdirSync(path.dirname(output), { recursive: true })
+fs.rmSync(output, { force: true })
+const result = spawnSync('zip', ['-qr', output, '.', '-x', '*.map', '*.LICENSE.txt', 'assets/extension/*'], { cwd: path.join(root, 'build'), stdio: 'inherit' })
+if (result.error) throw result.error
+if (result.status !== 0) process.exit(result.status || 1)
+console.log(`Created artifacts/leethub-${manifest.version}.zip`)

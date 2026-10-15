@@ -138,9 +138,18 @@ jobs:
             fi
           } > changelog.md
 
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '20'
+      - name: Build extension package
+        run: |
+          npm ci
+          npm run package
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           body_path: changelog.md
+          files: artifacts/*.zip
           generate_release_notes: true

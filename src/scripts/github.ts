@@ -1,237 +1,64 @@
-export class GitHub {
-  private hook: string
-  private token: string
-
-  constructor(hook: string, token: string) {
-    this.hook = hook
-    this.token = token
-  }
-
-  update(hook: string, token: string): void {
-    this.hook = hook
-    this.token = token
-  }
-
-  async getReference(
-    branch: string = 'main'
-  ): Promise<{ refSHA: string; ref: string }> {
-    return getReference(this.hook, this.token, branch)
-  }
-
-  async getDefaultBranchOnRepo(): Promise<string> {
-    return getDefaultBranchOnRepo(this.hook, this.token)
-  }
-
-  async createBlob(
-    content: string,
-    path: string
-  ): Promise<{ path: string; sha: string; mode: string; type: string }> {
-    return createBlob(this.hook, this.token, content, path)
-  }
-
-  async createTree(
-    refSHA: string,
-    tree_items: {
-      path: string
-      sha: string
-      mode: string
-      type: string
-    }[]
-  ): Promise<string> {
-    return createTree(this.hook, this.token, refSHA, tree_items)
-  }
-
-  async createCommit(
-    message: string,
-    treeSHA: string,
-    refSHA: string
-  ): Promise<string> {
-    return createCommit(this.hook, this.token, message, treeSHA, refSHA)
-  }
-
-  async updateHead(
-    ref: string,
-    commitSHA: string,
-    force: boolean = true
-  ): Promise<string> {
-    return updateHead(this.hook, this.token, ref, commitSHA, force)
-  }
-
-  async getTree(): Promise<
-    {
-      path: string
-      sha: string
-      mode: string
-      type: string
-    }[]
-  > {
-    return getTree(this.hook, this.token)
-  }
+export class GitHubError extends Error {
+  constructor(public status: number, message: string) { super(message) }
 }
 
-async function getDefaultBranchOnRepo(
-  hook: string,
-  token: string
-): Promise<string> {
-  const response = await fetch(`https://api.github.com/repos/${hook}`, {
-    method: 'GET',
+export async function githubRequest<T = any>(token: string, path: string, init: RequestInit = {}): Promise<T> {
+  const response = await fetch(`https://api.github.com${path}`, {
+    ...init,
     headers: {
-      Authorization: `token ${token}`,
-      Accept: 'application/vnd.github.v3+json'
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'Content-Type': 'application/json'
     }
   })
   const data = await response.json()
-  return data.default_branch
+  if (!response.ok) throw new GitHubError(response.status, `GitHub ${response.status}: ${data.message || 'Request failed'}`)
+  return data
 }
 
-async function getReference(
-  hook: string,
-  token: string,
-  branch: string = 'main'
-): Promise<{ refSHA: string; ref: string }> {
-  const response = await fetch(
-    `https://api.github.com/repos/${hook}/git/refs/heads/${branch}`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json'
-      }
+export class GitHub {
+  constructor(private hook: string, private token: string) {
+    if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(hook)) throw new Error('Invalid repository name')
+  }
+  request(path: string, method = 'GET', body?: object): Promise<any> {
+    return githubRequest(this.token, `/repos/${this.hook}${path}`, {
+      method, ...(body ? { body: JSON.stringify(body) } : {})
+    })
+  }
+  async repository(): Promise<any> { return this.request('') }
+  async head(branch: string): Promise<{ commit: string; tree: string }> {
+    let ref
+    try { ref = await this.request(`/git/ref/heads/${encodeURIComponent(branch)}`) }
+    catch (error) {
+      if (error instanceof GitHubError && [404, 409].includes(error.status)) throw new Error('Initialize the repository with a README on GitHub before uploading')
+      throw error
     }
-  )
-  const data = await response.json()
-  return { refSHA: data.object.sha, ref: data.ref }
-}
-
-async function createBlob(
-  hook: string,
-  token: string,
-  content: string,
-  path: string
-): Promise<{ path: string; sha: string; mode: string; type: string }> {
-  const response = await fetch(
-    `https://api.github.com/repos/${hook}/git/blobs`,
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        content: b64EncodeUnicode(content),
-        encoding: 'base64'
-      }),
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'content-type': 'application/json'
-      }
+    const commit = await this.request(`/git/commits/${ref.object.sha}`)
+    return { commit: ref.object.sha, tree: commit.tree.sha }
+  }
+  async fileSha(path: string, branch: string): Promise<string | null> {
+    try {
+      const file = await this.request(`/contents/${path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(branch)}`)
+      return file.sha ?? null
+    } catch (error) {
+      if (error instanceof GitHubError && error.status === 404) return null
+      throw error
     }
-  )
-  const data = await response.json()
-  return { path, sha: data.sha, mode: '100644', type: 'blob' }
-}
-
-async function createTree(
-  hook: string,
-  token: string,
-  refSHA: string,
-  tree_items: {
-    path: string
-    sha: string
-    mode: string
-    type: string
-  }[]
-): Promise<string> {
-  const response = await fetch(
-    `https://api.github.com/repos/${hook}/git/trees`,
-    {
-      method: 'POST',
-      body: JSON.stringify({ tree: tree_items, base_tree: refSHA }),
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'content-type': 'application/json'
-      }
-    }
-  )
-  const data = await response.json()
-  return data.sha
-}
-
-async function createCommit(
-  hook: string,
-  token: string,
-  message: string,
-  treeSHA: string,
-  refSHA: string
-): Promise<string> {
-  const response = await fetch(
-    `https://api.github.com/repos/${hook}/git/commits`,
-    {
-      method: 'POST',
-      body: JSON.stringify({ message, tree: treeSHA, parents: [refSHA] }),
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'content-type': 'application/json'
-      }
-    }
-  )
-  const data = await response.json()
-  return data.sha
-}
-
-async function updateHead(
-  hook: string,
-  token: string,
-  ref: string,
-  commitSHA: string,
-  force: boolean = true
-): Promise<string> {
-  const response = await fetch(
-    `https://api.github.com/repos/${hook}/git/${ref}`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify({ sha: commitSHA, force }),
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'content-type': 'application/json'
-      }
-    }
-  )
-  const data = await response.json()
-  return data.sha
-}
-
-async function getTree(
-  hook: string,
-  token: string
-): Promise<
-  {
-    path: string
-    sha: string
-    mode: string
-    type: string
-  }[]
-> {
-  const response = await fetch(
-    `https://api.github.com/repos/${hook}/git/trees/HEAD?recursive=1`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json'
-      }
-    }
-  )
-
-  const data = await response.json()
-  return data.tree
-}
-
-// Helper function for base64 encoding
-function b64EncodeUnicode(str: string): string {
-  return btoa(
-    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) =>
-      String.fromCharCode(parseInt(p1, 16))
-    )
-  )
+  }
+  async blob(content: string): Promise<string> {
+    const bytes = new TextEncoder().encode(content)
+    let binary = ''
+    bytes.forEach(byte => { binary += String.fromCharCode(byte) })
+    return (await this.request('/git/blobs', 'POST', { content: btoa(binary), encoding: 'base64' })).sha
+  }
+  async commit(branch: string, parent: { commit: string; tree: string }, files: { path: string; sha: string }[], message: string): Promise<string> {
+    const tree = await this.request('/git/trees', 'POST', {
+      base_tree: parent.tree, tree: files.map(file => ({ ...file, mode: '100644', type: 'blob' }))
+    })
+    const commit = await this.request('/git/commits', 'POST', { message, tree: tree.sha, parents: [parent.commit] })
+    const ref = await this.request(`/git/refs/heads/${encodeURIComponent(branch)}`, 'PATCH', { sha: commit.sha, force: false })
+    if (ref.object?.sha !== commit.sha) throw new Error('GitHub did not confirm the uploaded commit')
+    return commit.sha
+  }
 }

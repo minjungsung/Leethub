@@ -1,47 +1,62 @@
-import { Request } from '../types/Request'
-interface Sender {
-  id?: string
-  url?: string
+import browser from 'webextension-polyfill'
+import { initializeStorage } from './storage'
+import { parseData } from './leetcode/parsing'
+import { uploadOneSolveProblemOnGit } from './leetcode/uploadfunctions'
+
+let ready: Promise<void> | undefined
+function initialize(): Promise<void> {
+  if (!ready) ready = initializeStorage().catch(error => { ready = undefined; throw error })
+  return ready
+}
+void initialize().catch(() => {})
+let queue: Promise<unknown> = Promise.resolve()
+const pending = new Map<string, Promise<any>>()
+
+export function enqueueSubmission(id: string): Promise<any> {
+  if (!/^\d+$/.test(id)) return Promise.reject(new Error('Invalid submission ID'))
+  const existing = pending.get(id)
+  if (existing) return existing
+  const job = queue.then(async () => {
+    await initialize()
+    const { bjhEnable } = await browser.storage.local.get('bjhEnable')
+    if (bjhEnable !== true) return { skipped: true }
+    const submission = await parseData(id)
+    if (!submission) return { skipped: true }
+    return uploadOneSolveProblemOnGit(submission)
+  })
+  queue = job.catch(() => {})
+  pending.set(id, job)
+  void job.finally(() => pending.delete(id)).catch(() => {})
+  return job
 }
 
-type SendResponse = (response?: any) => void
-
-async function SolvedApiCall(problemId: number): Promise<any> {
-  return fetch(`https://solved.ac/api/v3/problem/show?problemId=${problemId}`, {
-    method: 'GET'
-  }).then((query) => query.json())
+function reportError(error: unknown): Promise<void> {
+  return browser.storage.local.set({ lastError: error instanceof Error ? error.message : 'Upload failed' })
 }
 
-function handleMessage(
-  request: Request,
-  sender: Sender,
-  sendResponse: SendResponse
-): boolean {
-  // Authentication belongs to extension-owned pages, never content scripts.
-  if (request && request.closeWebPage) {
-    sendResponse({ error: 'Content-script authentication is disabled' })
-    return false
+chrome.webRequest.onCompleted.addListener(details => {
+  if (details.tabId < 0 || details.statusCode !== 200) return
+  const id = new URL(details.url).pathname.match(/^\/submissions\/(?:detail\/)?(\d+)\/check\/?$/)?.[1]
+  if (id) void enqueueSubmission(id).catch(reportError)
+}, { urls: ['https://leetcode.com/submissions/*/check/'] })
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (sender.id !== chrome.runtime.id || !sender.url) return false
+  const url = new URL(sender.url)
+  const extensionPage = url.protocol === 'chrome-extension:' && url.host === chrome.runtime.id
+  const leetcodePage = url.origin === 'https://leetcode.com'
+  if (!extensionPage && !leetcodePage) return false
+  if (request?.task === 'status') {
+    void initialize().then(async () => {
+      const data = await browser.storage.local.get(['bjhEnable', 'lastUpload', 'lastError'])
+      sendResponse({ enabled: data.bjhEnable === true, lastUpload: data.lastUpload, error: data.lastError })
+    }).catch(error => sendResponse({ error: String(error) }))
+    return true
   }
-  let senderOrigin: string
-  try { senderOrigin = new URL(sender.url ?? '').origin } catch { return false }
-  if (
-    sender.id !== chrome.runtime.id ||
-    !sender.url ||
-    !['https://leetcode.com', 'https://practice.geeksforgeeks.org',
-      'https://www.acmicpc.net', 'https://school.programmers.co.kr',
-      'https://swexpertacademy.com', 'https://level.goorm.io'].includes(senderOrigin)
-  ) {
-    return false
-  }
-  if (
-    request &&
-    request.sender === 'leetcode' &&
-    request.task === 'SolvedApiCall'
-  ) {
-    SolvedApiCall(request.problemId ?? 0).then((res) => sendResponse(res))
-  }
+  if (request?.task !== 'uploadSubmission' || typeof request.submissionId !== 'string') return false
+  void enqueueSubmission(request.submissionId).then(sendResponse).catch(async error => {
+    await reportError(error)
+    sendResponse({ error: error.message || 'Upload failed' })
+  })
   return true
-}
-
-chrome.runtime.onMessage.addListener(handleMessage)
-export {}
+})

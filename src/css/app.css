@@ -1,8 +1,13 @@
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  width: auto;
-  height: 100%;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
+body { margin: 0; background: #f6f8fa; color: #1f2328; font: 14px/1.6 system-ui, sans-serif; }
+main { padding: 24px; }
+.popup { width: 360px; min-height: 300px; }
+.welcome { max-width: 640px; margin: 24px auto; }
+h1 { margin: 0 0 12px; }
+a { color: #0969da; }
+label { display: block; margin-top: 16px; }
+input:not([type=checkbox]), select { display: block; width: 100%; padding: 9px; margin: 6px 0; border: 1px solid #8c959f; border-radius: 5px; }
+button { padding: 8px 12px; margin: 12px 8px 0 0; cursor: pointer; }
+button:disabled { cursor: default; }
+[role=alert] { color: #b42318; overflow-wrap: anywhere; }
+[role=status] { overflow-wrap: anywhere; }

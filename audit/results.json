@@ -1,0 +1,65 @@
+{
+  "source": "500882ea00bc532e52f282308003d88552754082",
+  "environment": {
+    "node": "v24.17.0",
+    "mode": "Offline mocks and synthetic DOM; not live browser E2E"
+  },
+  "results": [
+    {
+      "name": "Parser uploads statement code instead of the editor solution",
+      "reproduced": true
+    },
+    {
+      "name": "Missing code produces an empty solution without validation",
+      "reproduced": true
+    },
+    {
+      "name": "GitHub 401 on branch update still saves stats and signals success",
+      "reproduced": true
+    },
+    {
+      "name": "Branch update requests force=true",
+      "reproduced": true
+    },
+    {
+      "name": "Successful upload does not update problem statistics",
+      "reproduced": true
+    },
+    {
+      "name": "C++ display language maps to Solution.txt",
+      "reproduced": true
+    },
+    {
+      "name": "Turning off auto upload does not stop an existing page observer",
+      "reproduced": true
+    },
+    {
+      "name": "Accepted text-node replacement is missed by the observer",
+      "reproduced": true
+    },
+    {
+      "name": "Deduplication queries a different path than the upload writes",
+      "reproduced": true
+    },
+    {
+      "name": "Enabling auto upload does not create an observer on an already open page",
+      "reproduced": true
+    },
+    {
+      "name": "Existing local authentication is overwritten during legacy sync migration",
+      "reproduced": true
+    },
+    {
+      "name": "Manifest omits GitHub API host access",
+      "reproduced": true
+    },
+    {
+      "name": "Repository creation response handler throws because jQuery is not imported",
+      "reproduced": true
+    },
+    {
+      "name": "Popup repository URL resolves inside the extension instead of GitHub",
+      "reproduced": true
+    }
+  ]
+}

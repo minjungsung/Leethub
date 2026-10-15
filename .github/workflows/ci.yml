@@ -27,6 +27,8 @@ jobs:
           node-version: '20'
       - name: Install dependencies
         run: npm ci
+      - name: Type check
+        run: npm run typecheck
       - name: Test
         run: npm test -- --watchAll=false
       - name: Build

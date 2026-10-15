@@ -1,216 +1,78 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import browser from 'webextension-polyfill'
-
-import '../css/welcome.css'
-import 'semantic-ui-css/semantic.min.css'
+import { githubRequest } from '../scripts/github'
 import { createRepo, linkRepo } from '../scripts/welcome'
 
 const Welcome: React.FC = () => {
-  const [accessToken, setAccessToken] = useState<string>('')
-  const [authMessage, setAuthMessage] = useState<string>('')
+  const [accessToken, setAccessToken] = useState('')
+  const [message, setMessage] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [repository, setRepository] = useState('')
+  const [repOption, setRepOption] = useState('')
+  const [orgOption, setOrgOption] = useState('platform')
+  useEffect(() => {
+    void browser.storage.local.get(['leethub_hook', 'leethub_OrgOption']).then(data => {
+      setRepository(typeof data.leethub_hook === 'string' ? data.leethub_hook : '')
+      setOrgOption(data.leethub_OrgOption === 'language' ? 'language' : 'platform')
+    })
+  }, [])
   const authenticate = async () => {
     const token = accessToken.trim()
-    if (!token) { setAuthMessage('Enter a repository-scoped GitHub token.'); return }
+    if (!token) { setMessage('Enter a repository-scoped GitHub token.'); return }
+    setBusy(true)
     try {
-      const response = await fetch('https://api.github.com/user', {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
-      })
-      if (!response.ok) throw new Error('Token rejected')
-      const user = await response.json()
+      const user = await githubRequest(token, '/user')
       if (typeof user.login !== 'string' || !user.login) throw new Error('Invalid account response')
-      await browser.storage.local.set({ leethub_token: token, leethub_username: user.login })
+      // Pause uploads and clear the previous account binding when replacing credentials.
+      await browser.storage.local.set({ leethub_token: token, leethub_username: user.login,
+        leethub_hook: null, mode_type: 'hook', bjhEnable: false, lastError: null, lastUpload: null })
       setAccessToken('')
-      setAuthMessage('GitHub connected. Select your repository below.')
-    } catch {
-      setAuthMessage('GitHub authentication failed. Check the token and its repository access.')
-    }
+      setMessage('GitHub connected. Select your repository below.')
+    } catch (error) {
+      setMessage(`GitHub authentication failed. ${error instanceof Error ? error.message : 'Check the token.'}`)
+    } finally { setBusy(false) }
   }
-  const [repository, setRepository] = useState<string>('')
-  const [repOption, setRepOption] = useState<string>('')
-  const [orgOption, setOrgOption] = useState<string>('')
-  const handleGetStartedClick = async () => {
-    const data = await browser.storage.local.get('leethub_token')
-    const token = data.leethub_token
-    if (typeof token !== 'string' || !token) {
-      // Not authorized yet.
-      document.getElementById('error')!.textContent =
-        'Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
-      document.getElementById('error')!.style.display = 'block'
-      document.getElementById('success')!.style.display = 'none'
-    } else if (repOption === 'new') {
-      // Assuming createRepo is a function defined elsewhere in the codebase.
-      createRepo(token, repository)
-    } else {
-      const data2 = await browser.storage.local.get('leethub_username')
-      const username = data2.leethub_username
-      if (typeof username !== 'string' || !username) {
-        // Improper authorization.
-        document.getElementById('error')!.textContent =
-          'Improper Authorization error - Grant LeetHub access to your GitHub account to continue (launch extension to proceed)'
-        document.getElementById('error')!.style.display = 'block'
-        document.getElementById('success')!.style.display = 'none'
-      } else {
-        // Assuming linkRepo is a function defined elsewhere in the codebase.
-        linkRepo(token, `${username}/${repository}`)
-      }
-    }
+  const connectRepository = async () => {
+    setBusy(true)
+    try {
+      const data = await browser.storage.local.get(['leethub_token', 'leethub_username'])
+      if (typeof data.leethub_token !== 'string' || !data.leethub_token) throw new Error('Authorization error - Grant access by connecting GitHub first')
+      const name = repository.trim()
+      const repo = repOption === 'new'
+        ? await createRepo(data.leethub_token, name)
+        : await linkRepo(data.leethub_token, name.includes('/') ? name : `${data.leethub_username}/${name}`)
+      await browser.storage.local.set({ leethub_hook: repo.full_name, mode_type: 'commit',
+        leethub_OrgOption: orgOption, bjhEnable: true, lastError: null, lastUpload: null })
+      setMessage(`Connected ${repo.full_name}. Auto upload is enabled.`)
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Repository connection failed') }
+    finally { setBusy(false) }
   }
-
-  return (
-    <div className='ui grid container'>
-      <div className='sixteen wide center aligned column'>
-        <br />
-        <p
-          className='caption'
-          style={{ fontSize: '6em' }}
-        >
-          Leet<span style={{ color: '#ff6c0a' }}>Hub</span>
-        </p>
-        <p className='caption'>
-          Automatically sync your code from LeetCode to GitHub
-        </p>
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <p
-          hidden
-          id='error'
-        ></p>
-        <p
-          hidden
-          id='success'
-        ></p>
-        <p
-          hidden
-          id='unlink'
-        >
-          Linked the wrong repo? Link the correct repository below.
-        </p>{' '}
-        {/* Ensure you replace # with actual link */}
-      </div>
-
-      <div className='sixteen wide column'>
-        <label htmlFor='access-token'>Repository-scoped GitHub token</label>
-        <input id='access-token' type='password' autoComplete='off'
-          value={accessToken} onChange={(event) => setAccessToken(event.target.value)} />
-        <p>Use a fine-grained token with Contents read and write for your selected repository.
-          The token is stored locally in this browser extension.</p>
-        <button type='button' onClick={authenticate}>Connect GitHub</button>
-        <p role='status'>{authMessage}</p>
-      </div>
-
-      {/* Create Hook */}
-      <div
-        id='hook_mode'
-        className='ui grid container'
-      >
-        <div className='six wide column'>
-          <p className='caption ui large header center aligned'>
-            To get started with leethub
-          </p>
-        </div>
-        <div className='four wide left aligned column'>
-          <div className='ui form'>
-            <div className='field'>
-              <select
-                id='type'
-                value={repOption}
-                onChange={(e) => setRepOption(e.target.value)}
-              >
-                <option value=''>Pick an Option</option>
-                <option value='new'>Create a new Private Repository</option>
-                <option value='link'>Link an Existing Repository</option>
-              </select>
-            </div>
-
-            <div className='field'>
-              <select
-                id='org_option'
-                value={orgOption}
-                onChange={(e) => setOrgOption(e.target.value)}
-              >
-                <option value='platform'>Organize by Platform</option>
-                <option value='language'>Organize by Language</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className='six wide column'>
-          <div className='ui form'>
-            <div className='field'>
-              <input
-                autoComplete='off'
-                id='name'
-                type='text'
-                placeholder='Repository Name'
-                value={repository}
-                onChange={(e) => setRepository(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className='sixteen wide right aligned column'>
-          <br />
-          <button
-            id='hook_button'
-            className='positive ui button'
-            disabled={repository === '' || repOption === ''}
-            onClick={handleGetStartedClick}
-          >
-            Get Started
-          </button>
-        </div>
-      </div>
-
-      {/* Show stats */}
-      <div
-        id='commit_mode'
-        className='ui grid container'
-      >
-        <div className='wide center aligned column'>
-          <br />
-          <br />
-          <br />
-          <div className='ui inverted large header'>
-            Want more features?
-            <br />
-            <a
-              style={{ color: 'aqua', fontSize: '0.8em' }}
-              target='_blank' rel='noopener noreferrer'
-              href='https://github.com/minjungsung/leethub/labels/feature'
-            >
-              Request a feature!
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Rate on GitHub */}
-      <div className='sixteen wide center aligned column'>
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <div className='ui inverted small header'>
-          <a
-            style={{ color: 'rgb(226, 243, 243)' }}
-            target='_blank' rel='noopener noreferrer'
-            href='https://github.com/minjungsung/leethub'
-          >
-            Star leethub on GitHub
-          </a>
-        </div>
-      </div>
-    </div>
-  )
+  const unlink = async () => {
+    await browser.storage.local.set({ leethub_hook: null, bjhEnable: false, mode_type: 'hook', lastUpload: null, lastError: null })
+    setMessage('Repository unlinked. Select another repository to resume uploads.')
+  }
+  return <main className='welcome'>
+    <h1>LeetHub setup</h1>
+    <p>Sync accepted LeetCode submissions to GitHub.</p>
+    <label htmlFor='access-token'>Repository-scoped GitHub token</label>
+    <input id='access-token' type='password' autoComplete='off' value={accessToken} onChange={event => setAccessToken(event.target.value)} />
+    <p>Use a fine-grained token with Contents read and write for your selected repository and an expiration date.</p>
+    <button disabled={busy} onClick={authenticate}>Connect GitHub</button>
+    <label htmlFor='type'>Repository action</label>
+    <select id='type' value={repOption} onChange={event => setRepOption(event.target.value)}>
+      <option value=''>Pick an Option</option><option value='link'>Link an Existing Repository</option>
+      <option value='new'>Create a new Private Repository</option>
+    </select>
+    {repOption === 'new' && <p>Creating a repository requires additional GitHub permission. Linking an existing initialized repository is recommended.</p>}
+    <label htmlFor='repository'>Repository</label>
+    <input id='repository' placeholder='Repository Name or owner/repository' value={repository} onChange={event => setRepository(event.target.value)} />
+    <label htmlFor='organization'>Organize solutions</label>
+    <select id='organization' value={orgOption} onChange={event => setOrgOption(event.target.value)}>
+      <option value='platform'>Organize by Platform</option><option value='language'>Organize by Language</option>
+    </select>
+    <button disabled={busy || !repository.trim() || !repOption} onClick={connectRepository}>Get Started</button>
+    <button disabled={busy} onClick={unlink}>Unlink repository</button>
+    <p role='status'>{message}</p>
+  </main>
 }
-
 export default Welcome

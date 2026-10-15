@@ -1,68 +1,45 @@
-# Leethub
+# LeetHub
 
-LeetCode Companion is a tool designed to enhance your coding practice and interview preparation experience on LeetCode. It seamlessly integrates with your development environment, offering features like automatic submission tracking, personalized statistics, and more. This project aims to make your LeetCode journey more productive and insightful.
+LeetHub is a Chrome Manifest V3 extension that uploads accepted LeetCode submissions to a selected GitHub repository. It fetches the actual submitted source and language from LeetCode instead of reading editor or problem-statement DOM elements.
 
-## Features
+## Supported features
 
-- **Automatic Submission Tracking**: Automatically tracks your problem submissions to LeetCode, including status (Accepted, Wrong Answer, etc.), runtime, and memory usage.
-- **Personalized Statistics**: Provides detailed statistics on your progress, including total problems solved, acceptance rate, and performance in various problem categories.
-- **Problem Recommendations**: Offers personalized problem recommendations based on your past submissions and areas that need improvement.
-- **Offline Access**: Allows you to save problems for offline access, enabling you to practice anytime, anywhere without internet connectivity.
+- Automatic detection of completed LeetCode submission checks while the extension is installed.
+- Upload accepted submission detail pages, or enter a submission ID / URL in the popup.
+- Commit the source and problem README to the repository's default branch.
+- Skip identical source and README content already on GitHub.
+- Preserve concurrent commits with non-forced branch updates and conflict retries.
+- Organize by platform or language file extension.
+- Display counts of problems synchronized by this extension, with difficulty totals. Submission runtime and memory are saved with local statistics.
 
-## Getting Started
+LeetCode is the supported platform. Programmers, Baekjoon, GeeksforGeeks, SWEA, and Goorm adapters are not included. Recommendations, comprehensive wrong-answer tracking, offline practice, and historical account statistics are not implemented.
 
-This project is built using Create React App for a smooth and straightforward setup.
+## Install
 
-### Prerequisites
+Requirements: Node.js 20 or newer, npm, Chrome, and `zip` for packaging.
 
-- Node.js (LTS version recommended)
-- npm (comes with Node.js)
+```sh
+npm ci
+npm run typecheck
+npm test -- --watchAll=false
+npm run build
+```
 
-### Installation
+Open `chrome://extensions`, enable Developer mode, choose **Load unpacked**, and select the repository's `build` directory. A normal web server does not provide extension APIs.
 
-1. Clone the repository:
-``` git clone https://github.com/minjungsung/leethub.git ```
+Open the extension popup and choose **Connect GitHub**. Create a fine-grained GitHub token restricted to the desired repository with **Contents: read and write**, and set an expiration date. Enter it on the extension's setup page. Link an existing repository, using its name or `owner/repository`; initialize it with a README first. New private repository creation is optional and needs additional GitHub account permission.
 
-2. Navigate to the project directory:
-``` cd leethub ```
+Choose organization and **Get Started**. This enables auto upload. Sign in to LeetCode using the same browser profile and submit a solution. Only accepted submissions with available source and language are uploaded. You can also visit your accepted submission detail page, or paste its ID / URL into **Upload an accepted submission** in the popup. Older submissions are uploaded only when selected this way; there is no bulk history import.
 
-3. Install dependencies:
-``` npm install ```
+Check **View latest solution** and any error displayed in the popup. A failed extraction, unsupported language, expired/read-only token, empty repository, or protected branch produces an error instead of a success record. Uploads already committed when the toggle is switched off cannot be undone; preparation checks the toggle again before committing.
 
-4. Start the development server:
-``` npm start ```
+## Development and release
 
-   This runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits.
+```sh
+npm run watch    # rebuild on source/public changes; reload the unpacked extension manually
+npm run package  # build and produce artifacts/leethub-<version>.zip
+```
 
-### Building for Production
+`npm start` serves the React UI for development; use the unpacked build to exercise browser APIs. The release workflow builds and attaches an extension ZIP after its verification gate. Update `public/manifest.json` when changing extension versions.
 
-To build the app for production, run:
-``` npm run build ```
-
-This command builds the app to the `build` folder, optimizing the build for the best performance. Your app is ready to be deployed!
-
-## Deployment
-
-Refer to the [Create React App deployment documentation](https://facebook.github.io/create-react-app/docs/deployment) for detailed instructions on deploying to popular platforms like GitHub Pages, Netlify, and Vercel.
-
-## Contributing
-
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## Learn More
-
-To learn more about React, check out the [React documentation](https://reactjs.org/).
-
----
-
-Happy Coding! 🚀
+See [Security](SECURITY.md), [Setup Guide](wiki/Setup-Guide.md), and [Architecture](wiki/Architecture.md). Automated checks cover API extraction, rejected requests, deduplication, conflicts, migration, setup, and popup behavior. Live LeetCode/GitHub verification still requires a signed-in browser and a disposable repository; private API schema changes may require adapter updates.
