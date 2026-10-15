@@ -57,7 +57,7 @@ const Welcome: React.FC = () => {
   }
   return <main className='welcome'>
     <aside className='welcome-story'>
-      <div className='brand'><span className='brand-mark'><Icon name='code' /></span><strong>LeetHub</strong></div>
+      <div className='brand'><img className='brand-mark' src='assets/leethub-mark.svg' alt='' width='40' height='40' /><strong>LeetHub</strong></div>
       <div className='story-content'><span className='eyebrow'>Made for your next breakthrough</span><h1>Your code.<br />Beautifully kept.</h1><p>Your accepted solutions deserve a place of their own. Connect GitHub and keep your progress, one problem at a time.</p>
         <div className='flow-preview' aria-hidden='true'><div className='flow-source'><Icon name='code' />Accepted</div><Icon name='arrow' className='flow-arrow' /><div className='flow-destination'><Icon name='repository' />Your repository</div></div>
       </div><span className='story-footnote'>Built for LeetCode. Stored on GitHub.</span>

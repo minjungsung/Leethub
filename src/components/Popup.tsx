@@ -32,7 +32,7 @@ const Popup: React.FC = () => {
   const enabled = data.bjhEnable === true
   return <main className='popup'>
     <header className='brand-row'>
-      <div className='brand'><span className='brand-mark'><Icon name='code' /></span><div><h1>LeetHub</h1><span className='brand-caption'>LeetCode → GitHub</span></div></div>
+      <div className='brand'><img className='brand-mark' src='assets/leethub-mark.svg' alt='' width='40' height='40' /><div><h1>LeetHub</h1><span className='brand-caption'>LeetCode → GitHub</span></div></div>
       <a className='icon-button' href={WELCOME_URL} aria-label='Repository settings / reconnect' title='Settings' target='_blank' rel='noopener noreferrer'><Icon name='settings' /></a>
     </header>
     {data.leethub_hook ? <>

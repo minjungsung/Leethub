@@ -15,3 +15,7 @@ The popup has a 4px white inset around a 12px rounded panel and a thin scrollbar
 The updated unpacked extension was reloaded in Chrome; the rendered panel initially had a 24px corner radius and no horizontal overflow. Type checking, all 45 existing tests, production packaging, and ZIP integrity checks passed. An authenticated accepted Python3 submission's 286 source bytes matched the GitHub solution exactly (SHA-256: `81e0e33c3eddf9dde2d7cbabbc9441dabf9e3693d9a14117342ca47039823dc6`). A repeated upload through the updated popup returned "This solution is already uploaded." and left the remote branch head unchanged.
 
 The corner radius was subsequently reduced to 12px, card corners to 14px, and the outer inset to 4px for a more restrained appearance.
+
+## Shared icon update
+
+The toolbar, popup, and setup header now share an independent vector mark: white code brackets and a sky-blue upload arrow on a dark navy rounded tile. Raster icons at 16, 32, 48, and 128px are generated from `public/assets/leethub-mark.svg`; store screenshot generation uses the same source. The page favicon uses the current icon as well.

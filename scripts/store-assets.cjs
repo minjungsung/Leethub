@@ -37,9 +37,10 @@ async function main() {
     if (state.title !== 'LeetHub' || !state.migrated || state.error) throw new Error('Popup / service worker smoke failed')
     console.log('Popup / worker smoke passed:', JSON.stringify(state))
     fs.mkdirSync(path.join(root, 'store/assets'), { recursive: true })
-    // Generate square raster icons with canvas; no source material or personal metadata.
-    for (const size of [16, 48, 128]) {
-      const data = await evaluate(`(()=>{const c=document.createElement('canvas');c.width=c.height=${size};const x=c.getContext('2d');x.fillStyle='#2563eb';x.fillRect(0,0,${size},${size});x.fillStyle='#ffffff';x.font='bold ${Math.round(size * 0.43)}px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText('LH',${size / 2},${size / 2});return c.toDataURL('image/png').split(',')[1]})()`)
+    // Rasterize the shared vector mark at high resolution for crisp small icons.
+    const mark = fs.readFileSync(path.join(root, 'public/assets/leethub-mark.svg'), 'utf8')
+    for (const size of [16, 32, 48, 128]) {
+      const data = await evaluate(`(async()=>{const image=new Image();image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(${JSON.stringify(mark)});await image.decode();const large=document.createElement('canvas');large.width=large.height=${size * 4};large.getContext('2d').drawImage(image,0,0,large.width,large.height);const c=document.createElement('canvas');c.width=c.height=${size};const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(large,0,0,c.width,c.height);return c.toDataURL('image/png').split(',')[1]})()`)
       fs.writeFileSync(path.join(root, `public/assets/icon-${size}.png`), Buffer.from(data, 'base64'))
     }
     fs.copyFileSync(path.join(root, 'public/assets/icon-128.png'), path.join(root, 'store/assets/icon-128.png'))
