@@ -6,18 +6,15 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
-    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@types/webextension-polyfill": "^0.12.6",
-    "customize-cra": "^1.0.0",
     "jquery": "^4.0.0",
     "js-sha1": "^0.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.18.4",
-    "react-scripts": "5.0.1",
     "semantic-ui-css": "^2.5.0",
     "semantic-ui-react": "^2.1.5",
     "typescript": "^4.9.5",
@@ -25,20 +22,13 @@
     "webextension-polyfill": "^0.12.0"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "INLINE_RUNTIME_CHUNK=false react-app-rewired build",
+    "start": "node scripts/watch.cjs",
+    "build": "node scripts/build.cjs",
     "build:dev": "npm run build",
-    "test": "react-app-rewired test",
-    "eject": "react-scripts eject",
+    "test": "node scripts/test.cjs",
     "watch": "node scripts/watch.cjs",
     "typecheck": "tsc --noEmit",
     "package": "npm run build && node scripts/package.cjs"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -56,7 +46,8 @@
     "@types/chrome": "^0.3.5",
     "@types/jquery": "^4.0.1",
     "chrome-remote-interface": "^0.34.0",
-    "cross-env": "^10.1.0",
-    "react-app-rewired": "^2.2.1"
+    "esbuild": "^0.28.2",
+    "jsdom": "^28.1.0",
+    "vitest": "^4.1.11"
   }
 }

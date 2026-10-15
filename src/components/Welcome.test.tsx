@@ -1,23 +1,24 @@
+import { vi, type Mock } from 'vitest'
 import React from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import Welcome from './Welcome'
 import browser from 'webextension-polyfill'
 import { createRepo, linkRepo } from '../scripts/welcome'
 
-jest.mock('webextension-polyfill', () => ({
+vi.mock('webextension-polyfill', () => ({
   __esModule: true,
-  default: { storage: { local: { get: jest.fn().mockResolvedValue({ leethub_token: { invalid: true } }), set: jest.fn().mockResolvedValue(undefined) } } },
+  default: { storage: { local: { get: vi.fn().mockResolvedValue({ leethub_token: { invalid: true } }), set: vi.fn().mockResolvedValue(undefined) } } },
 }))
-jest.mock('../scripts/welcome', () => ({ createRepo: jest.fn(), linkRepo: jest.fn() }))
+vi.mock('../scripts/welcome', () => ({ createRepo: vi.fn(), linkRepo: vi.fn() }))
 
 beforeEach(() => {
-  jest.clearAllMocks()
-  ;(browser.storage.local.get as jest.Mock).mockResolvedValue({ leethub_token: { invalid: true } })
-  ;(browser.storage.local.set as jest.Mock).mockResolvedValue(undefined)
+  vi.clearAllMocks()
+  ;(browser.storage.local.get as Mock).mockResolvedValue({ leethub_token: { invalid: true } })
+  ;(browser.storage.local.set as Mock).mockResolvedValue(undefined)
 })
 
 test('rejects non-string stored authorization instead of creating a repository', async () => {
-  (browser.storage.local.get as jest.Mock).mockResolvedValue({ leethub_token: { invalid: true } })
+  (browser.storage.local.get as Mock).mockResolvedValue({ leethub_token: { invalid: true } })
   render(<Welcome />)
   fireEvent.change(screen.getByPlaceholderText(/repository/i), { target: { value: 'solutions' } })
   fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'new' } })
@@ -29,9 +30,9 @@ test('rejects non-string stored authorization instead of creating a repository',
 
 
 test('does not persist a rejected token', async () => {
-  const fetchMock = jest.fn().mockResolvedValue({ ok: false })
+  const fetchMock = vi.fn().mockResolvedValue({ ok: false })
   global.fetch = fetchMock
-  ;(browser.storage.local.set as jest.Mock).mockClear()
+  ;(browser.storage.local.set as Mock).mockClear()
   render(<Welcome />)
   fireEvent.change(screen.getByLabelText(/repository-scoped github token/i), { target: { value: 'invalid-test-token' } })
   fireEvent.click(screen.getByRole('button', { name: /connect github/i }))
@@ -40,8 +41,8 @@ test('does not persist a rejected token', async () => {
 })
 
 test('stores verified authentication and clears the input', async () => {
-  global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ login: 'test-account' }) })
-  ;(browser.storage.local.set as jest.Mock).mockClear()
+  global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ login: 'test-account' }) })
+  ;(browser.storage.local.set as Mock).mockClear()
   render(<Welcome />)
   fireEvent.change(screen.getByLabelText(/repository-scoped github token/i), { target: { value: 'test-only-token' } })
   fireEvent.click(screen.getByRole('button', { name: /connect github/i }))
@@ -50,8 +51,8 @@ test('stores verified authentication and clears the input', async () => {
 })
 
 test('links an organization repository and persists language organization and enablement', async () => {
-  ;(browser.storage.local.get as jest.Mock).mockResolvedValue({ leethub_token: 'fixture-token', leethub_username: 'fixture-account' })
-  ;(linkRepo as jest.Mock).mockResolvedValue({ full_name: 'example/solutions' })
+  ;(browser.storage.local.get as Mock).mockResolvedValue({ leethub_token: 'fixture-token', leethub_username: 'fixture-account' })
+  ;(linkRepo as Mock).mockResolvedValue({ full_name: 'example/solutions' })
   render(<Welcome />)
   fireEvent.change(screen.getByPlaceholderText(/repository/i), { target: { value: 'example/solutions' } })
   fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'link' } })
@@ -62,8 +63,8 @@ test('links an organization repository and persists language organization and en
 })
 
 test('shows repository API failure without persisting a connection', async () => {
-  ;(browser.storage.local.get as jest.Mock).mockResolvedValue({ leethub_token: 'fixture-token', leethub_username: 'fixture-account' })
-  ;(linkRepo as jest.Mock).mockRejectedValue(new Error('GitHub 403'))
+  ;(browser.storage.local.get as Mock).mockResolvedValue({ leethub_token: 'fixture-token', leethub_username: 'fixture-account' })
+  ;(linkRepo as Mock).mockRejectedValue(new Error('GitHub 403'))
   render(<Welcome />)
   fireEvent.change(screen.getByPlaceholderText(/repository/i), { target: { value: 'solutions' } })
   fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'link' } })

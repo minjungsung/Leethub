@@ -1,11 +1,12 @@
+import { vi, type Mock } from 'vitest'
 import { parseData } from './parsing'
 const detail = {
   id: '123', statusCode: 10, code: 'return "안녕";', timestamp: '100', runtimeDisplay: '1 ms', memoryDisplay: '5 MB',
   lang: { name: 'C++' }, question: { questionId: '1', title: 'Two Sum', titleSlug: 'two-sum', content: '<p>Example</p>', difficulty: 'Easy' }
 }
-beforeEach(() => { global.fetch = jest.fn() })
+beforeEach(() => { global.fetch = vi.fn() })
 function respond(value: unknown, ok = true, status = 200) {
-  (global.fetch as jest.Mock).mockResolvedValue({ ok, status, json: async () => value })
+  (global.fetch as Mock).mockResolvedValue({ ok, status, json: async () => value })
 }
 test('retrieves authoritative accepted source, regardless of editor or statement DOM', async () => {
   document.body.innerHTML = '<pre><code>wrong example</code></pre>'

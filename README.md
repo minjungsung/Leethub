@@ -16,7 +16,7 @@ LeetCode is the supported platform. Programmers, Baekjoon, GeeksforGeeks, SWEA, 
 
 ## Install
 
-Requirements: Node.js 20 or newer, npm, Chrome, and `zip` for packaging.
+Requirements: Node.js 20.19 or newer, npm, Chrome, and `zip` for packaging.
 
 ```sh
 npm ci
@@ -40,6 +40,8 @@ npm run watch    # rebuild on source/public changes; reload the unpacked extensi
 npm run package  # build and produce artifacts/leethub-<version>.zip
 ```
 
-`npm start` serves the React UI for development; use the unpacked build to exercise browser APIs. The release workflow builds and attaches an extension ZIP after its verification gate. Update `public/manifest.json` when changing extension versions.
+`npm start` watches and rebuilds the extension just like `npm run watch`; reload the unpacked extension to exercise browser APIs.
+
+The build uses esbuild to produce independent popup, content-script, and service-worker bundles. Vitest runs the existing automated checks with jsdom. This replaces the unmaintained Create React App dependency graph, including vulnerable packages without patched releases. Type checking remains a separate required CI step; esbuild does not perform type checking. The release workflow builds and attaches an extension ZIP after its verification gate. Update `public/manifest.json` when changing extension versions.
 
 See [Security](SECURITY.md), [Setup Guide](wiki/Setup-Guide.md), and [Architecture](wiki/Architecture.md). Automated checks cover API extraction, rejected requests, deduplication, conflicts, migration, setup, and popup behavior. Live LeetCode/GitHub verification still requires a signed-in browser and a disposable repository; private API schema changes may require adapter updates.
