@@ -1,0 +1,69 @@
+name: Dependency Gate
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+concurrency:
+  group: dependency-gate-${{ github.repository }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-dependencies:
+    permissions:
+      contents: read
+    uses: minjungsung/.github/.github/workflows/dependency-validation.yml@53eef31813cadd2611ade5062449c5089bbe1774
+    with:
+      pr-author: ${{ github.event.pull_request.user.login || 'policy-push' }}
+      projects-json: '[{"name":"root-node","ecosystem":"npm","path":".","runtime-version":"20","manifest":"package.json","lockfile":"package-lock.json","timeout-minutes":15}]'
+      policy-ref: 53eef31813cadd2611ade5062449c5089bbe1774
+
+  dependency-gate:
+    name: dependency-gate
+    if: always()
+    needs: validate-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require dependency validation success
+        env:
+          VALIDATION_RESULT: ${{ needs.validate-dependencies.result }}
+        run: test "$VALIDATION_RESULT" = success
+
+  dependabot-auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    needs: dependency-gate
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fetch Dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@08eff52bf64351f401fb50d4972fa95b9f2c2d1b
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Approve and enable auto-merge
+        if: >-
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
+      - name: Require manual review for other update types
+        if: >-
+          steps.dependabot-metadata.outputs.update-type != 'version-update:semver-patch' &&
+          steps.dependabot-metadata.outputs.update-type != 'version-update:semver-minor'
+        env:
+          UPDATE_TYPE: ${{ steps.dependabot-metadata.outputs.update-type }}
+        run: |
+          {
+            echo "## Manual review required"
+            echo
+            echo "Dependabot update type '$UPDATE_TYPE' is not eligible for auto-merge."
+          } >> "$GITHUB_STEP_SUMMARY"
